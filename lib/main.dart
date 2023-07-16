@@ -2,6 +2,7 @@ import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/login_page.dart';
 import 'package:age_sync/pages/splash.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase/keys.dart' as keys;
@@ -23,23 +24,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPaintSizeEnabled = false;
+
     return MaterialApp(
       title: 'Home',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.lightBlue,
-          error: Colors.red,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.lightBlue,
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData(
+        colorScheme: const ColorScheme.dark(),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.grey[900],
           foregroundColor: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.lightBlue,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(15),
             ),
           ),
         ),

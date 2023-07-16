@@ -86,22 +86,38 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text('Choose an option to sign in'),
-                ElevatedButton(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/email-sign-up'),
-                  child: Text(_isLoading ? 'Loading' : 'Sign in with Email'),
-                ),
-                ElevatedButton(
-                  onPressed:
-                      _isLoading ? null : () => _signIn(signInWithGoogle),
-                  child: Text(_isLoading ? 'Loading' : 'Sign in with Google'),
-                ),
-                ElevatedButton(
-                  onPressed:
-                      _isLoading ? null : () => _signIn(signInWithFacebook),
-                  child: Text(_isLoading ? 'Loading' : 'Sign in with Facebook'),
-                ),
+                const Text('Sign in',
+                    style:
+                        TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                const Text('to continue to AgeSync'),
+                const SizedBox(height: 16),
+                IntrinsicWidth(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                      ElevatedButton(
+                        onPressed:
+                            _isLoading ? null : () => _signIn(signInWithGoogle),
+                        child: Text(
+                            _isLoading ? 'Loading' : 'Sign in with Google'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => _signIn(signInWithFacebook),
+                        child: Text(
+                            _isLoading ? 'Loading' : 'Sign in with Facebook'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[200],
+                            foregroundColor: Colors.black),
+                        onPressed: () =>
+                            Navigator.of(context).pushNamed('/email-sign-up'),
+                        child:
+                            Text(_isLoading ? 'Loading' : 'Sign in with Email'),
+                      ),
+                    ]))
               ],
             ),
           ),
