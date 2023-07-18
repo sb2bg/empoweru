@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:age_sync/main.dart';
+
+import '../utils/constants.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -22,6 +23,7 @@ class _AccountPageState extends State<AccountPage> {
 
     try {
       final userId = supabase.auth.currentUser!.id;
+
       final data = await supabase
           .from('profiles')
           .select<Map<String, dynamic>>()
@@ -147,6 +149,9 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 18),
                 TextButton(onPressed: _signOut, child: const Text('Sign Out')),
+                TextButton(
+                    onPressed: () => Navigator.pushNamed(context, '/chat'),
+                    child: const Text('Go to chat page'))
               ],
             ),
     );
