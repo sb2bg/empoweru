@@ -150,8 +150,8 @@ class _AccountPageState extends State<AccountPage> {
                 const SizedBox(height: 18),
                 TextButton(onPressed: _signOut, child: const Text('Sign Out')),
                 TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/chat'),
-                    child: const Text('Go to chat page'))
+                    onPressed: () => Navigator.pushNamed(context, '/messages'),
+                    child: const Text('Go to messages'))
               ],
             ),
     );

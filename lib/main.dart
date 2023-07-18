@@ -3,6 +3,7 @@ import 'package:age_sync/pages/chat_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/login_page.dart';
 import 'package:age_sync/pages/splash.dart';
+import 'package:age_sync/pages/view_messages.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,8 @@ class MyApp extends StatelessWidget {
         '/': (_) => const SplashPage(),
         '/login': (_) => const LoginPage(),
         '/account': (_) => const AccountPage(),
-        '/chat': (_) => const ChatPage(),
+        '/messages': (_) => const ViewMessagesPage(),
+        '/chat': (context) => ChatPage(profileId: "1"),
         '/email-sign-up': (_) => const EmailSignUpPage(),
       },
     );

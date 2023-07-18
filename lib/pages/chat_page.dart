@@ -9,15 +9,16 @@ import 'package:timeago/timeago.dart';
 
 import '../utils/constants.dart';
 
-/// Page to chat with someone.
-///
-/// Displays chat bubbles as a ListView and TextField to enter new chat.
 class ChatPage extends StatefulWidget {
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({Key? key, required this.profileId}) : super(key: key);
 
-  static Route<void> route() {
+  final String profileId;
+
+  static Route<void> route(String profileId) {
     return MaterialPageRoute(
-      builder: (context) => const ChatPage(),
+      builder: (context) => ChatPage(
+        profileId: profileId,
+      ),
     );
   }
 
@@ -27,7 +28,8 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
-  final Map<String, Profile> _profileCache = {};
+  late final Profile _them;
+  late final Profile _me;
 
   @override
   void initState() {
@@ -40,21 +42,22 @@ class _ChatPageState extends State<ChatPage> {
         .map((maps) => maps
             .map((map) => Message.fromMap(map: map, myUserId: myUserId))
             .toList());
+    _loadProfiles(myUserId, widget.profileId);
+
     super.initState();
   }
 
-  Future<void> _loadProfileCache(String profileId) async {
-    if (_profileCache[profileId] != null) {
-      return;
-    }
+  Future<void> _loadProfiles(String myId, String friendId) async {
+    final friend =
+        await supabase.from('profiles').select().eq('id', friendId).single();
+    final me = await supabase.from('profiles').select().eq('id', myId).single();
 
-    final data =
-        await supabase.from('profiles').select().eq('id', profileId).single();
-
-    final profile = Profile.fromMap(data);
+    final friendProfile = Profile.fromMap(friend);
+    final myProfile = Profile.fromMap(me);
 
     setState(() {
-      _profileCache[profileId] = profile;
+      _them = friendProfile;
+      _me = myProfile;
     });
   }
 
@@ -74,7 +77,7 @@ class _ChatPageState extends State<ChatPage> {
         stream: _messagesStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final messages = snapshot.data!;
+            final messages = snapshot.data ?? [];
 
             return Column(
               children: [
@@ -89,11 +92,6 @@ class _ChatPageState extends State<ChatPage> {
                           itemCount: messages.length,
                           itemBuilder: (context, index) {
                             final message = messages[index];
-
-                            /// I know it's not good to include code that is not related
-                            /// to rendering the widget inside build method, but for
-                            /// creating an app quick and dirty, it's fine 😂
-                            _loadProfileCache(message.profileId);
 
                             return _ChatBubble(
                               message: message,
@@ -214,9 +212,8 @@ class _ChatBubble extends StatelessWidget {
     List<Widget> chatContents = [
       if (!message.isMine)
         CircleAvatar(
-          child: profile == null
-              ? preloader
-              : Text(profile!.username.substring(0, 2)),
+          child:
+              profile == null ? preloader : Text(profile!.name.substring(0, 2)),
         ),
       const SizedBox(width: 12),
       Flexible(
