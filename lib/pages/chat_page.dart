@@ -95,7 +95,7 @@ class _ChatPageState extends State<ChatPage> {
 
                             return _ChatBubble(
                               message: message,
-                              profile: _profileCache[message.profileId],
+                              profile: message.isMine ? _me : _them,
                             );
                           },
                         ),
