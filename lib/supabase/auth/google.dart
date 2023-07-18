@@ -4,10 +4,9 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 
-import 'package:age_sync/supabase/keys.dart' as keys;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../main.dart';
+import '../../utils/constants.dart';
 
 generateRandomString() {
   final random = Random.secure();
@@ -18,7 +17,7 @@ generateRandomString() {
 final rawNonce = generateRandomString();
 final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
-const clientId = keys.iosClientId;
+const clientId = iosClientId;
 const packageName = 'me.sullivan.ageSync';
 
 const redirectUrl = '$packageName:/google_auth';

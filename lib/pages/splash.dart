@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:age_sync/main.dart';
+
+import '../utils/constants.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

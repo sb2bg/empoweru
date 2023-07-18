@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:age_sync/main.dart';
 
 import '../supabase/auth/facebook.dart';
 import '../supabase/auth/google.dart';
+import '../utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -117,6 +117,17 @@ class _LoginPageState extends State<LoginPage> {
                         child:
                             Text(_isLoading ? 'Loading' : 'Sign in with Email'),
                       ),
+                      Row(
+                        children: [
+                          const Text('Don\'t have an account?'),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/sign-up');
+                            },
+                            child: const Text('Sign up'),
+                          )
+                        ],
+                      )
                     ]))
               ],
             ),
