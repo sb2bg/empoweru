@@ -38,6 +38,7 @@ dependencies:
   supabase_flutter: ^1.10.3
   flutter_appauth: ^6.0.0
   crypto: ^3.0.3
+  timeago: ^3.5.0
 
 dev_dependencies:
   flutter_test:
