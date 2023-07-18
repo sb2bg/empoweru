@@ -1,23 +1,22 @@
 import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/chat_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/login_page.dart';
 import 'package:age_sync/pages/splash.dart';
+import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'supabase/keys.dart' as keys;
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: keys.supabaseUrl,
-    anonKey: keys.supabaseAnonKey,
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
     authFlowType: AuthFlowType.pkce,
   );
 
   runApp(const MyApp());
 }
-
-final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -57,6 +56,7 @@ class MyApp extends StatelessWidget {
         '/': (_) => const SplashPage(),
         '/login': (_) => const LoginPage(),
         '/account': (_) => const AccountPage(),
+        '/chat': (_) => const ChatPage(),
         '/email-sign-up': (_) => const EmailSignUpPage(),
       },
     );
