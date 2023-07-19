@@ -11,6 +11,6 @@ class Profile {
 
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
-        name = map['name'],
+        name = map['name'] ?? '', // TODO: remove null check, enforce name in db
         avatarUrl = map['avatar_url'];
 }
