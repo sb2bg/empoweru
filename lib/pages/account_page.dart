@@ -1,9 +1,11 @@
 import 'package:age_sync/pages/login_page.dart';
 import 'package:age_sync/pages/view_messages.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../utils/constants.dart';
+import '../utils/profile.dart';
 
 class AccountPage extends StatefulWidget {
   static const routeName = '/account';
@@ -15,16 +17,10 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  final _usernameController = TextEditingController();
-  final _websiteController = TextEditingController();
-
-  var _loading = true;
+  late Profile _profile;
+  final _loading = ValueNotifier(true);
 
   Future<void> _getProfile() async {
-    setState(() {
-      _loading = true;
-    });
-
     try {
       final userId = supabase.auth.currentUser!.id;
 
@@ -34,85 +30,20 @@ class _AccountPageState extends State<AccountPage> {
           .eq('id', userId)
           .single();
 
-      _usernameController.text = (data['username'] ?? '') as String;
-      _websiteController.text = (data['website'] ?? '') as String;
+      setState(() {
+        _profile = Profile.fromMap(data);
+        _loading.value = false;
+      });
     } on PostgrestException catch (error) {
-      SnackBar(
-        content: Text(error.message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
+      context.showErrorSnackBar(message: error.message);
     } catch (error) {
-      SnackBar(
-        content: const Text('Unexpected error occurred'),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+      context.showErrorSnackBar(message: error.toString());
     }
   }
 
-  /// Called when user taps `Update` button
-  Future<void> _updateProfile() async {
-    setState(() {
-      _loading = true;
-    });
-    final userName = _usernameController.text.trim();
-    final website = _websiteController.text.trim();
-    final user = supabase.auth.currentUser;
-    final updates = {
-      'id': user!.id,
-      'username': userName,
-      'website': website,
-      'updated_at': DateTime.now().toIso8601String(),
-    };
-    try {
-      await supabase.from('profiles').upsert(updates);
-      if (mounted) {
-        const SnackBar(
-          content: Text('Successfully updated profile!'),
-        );
-      }
-    } on PostgrestException catch (error) {
-      SnackBar(
-        content: Text(error.message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
-    } catch (error) {
-      SnackBar(
-        content: const Text('Unexpected error occurred'),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _signOut() async {
-    try {
-      await supabase.auth.signOut();
-    } on AuthException catch (error) {
-      SnackBar(
-        content: Text(error.message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
-    } catch (error) {
-      SnackBar(
-        content: const Text('Unexpected error occurred'),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
-    } finally {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
-      }
-    }
+  _signOut() {
+    supabase.auth.signOut().then((value) =>
+        {if (mounted) context.pushReplacementNamed(LoginPage.routeName)});
   }
 
   @override
@@ -122,43 +53,58 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   @override
-  void dispose() {
-    _usernameController.dispose();
-    _websiteController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              children: [
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(labelText: 'User Name'),
-                ),
-                const SizedBox(height: 18),
-                TextFormField(
-                  controller: _websiteController,
-                  decoration: const InputDecoration(labelText: 'Website'),
-                ),
-                const SizedBox(height: 18),
-                ElevatedButton(
-                  onPressed: _loading ? null : _updateProfile,
-                  child: Text(_loading ? 'Saving...' : 'Update'),
-                ),
-                const SizedBox(height: 18),
-                TextButton(onPressed: _signOut, child: const Text('Sign Out')),
-                TextButton(
-                    onPressed: () => Navigator.pushNamed(
-                        context, ViewMessagesPage.routeName),
-                    child: const Text('Go to messages'))
-              ],
+    return ValueListenableBuilder(
+        valueListenable: _loading,
+        builder: (context, value, child) {
+          if (value) {
+            return preloader;
+          }
+
+          return Scaffold(
+            appBar: AppBar(title: const Text('Profile')),
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  ListTile(
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundImage:
+                            CachedNetworkImageProvider(_profile.avatarUrl),
+                      ),
+                      title: Text(_profile.name),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => print('TODO'),
+                      )),
+                  const Divider(),
+                  ListTile(
+                      leading: const Icon(Icons.email_outlined),
+                      title: const Text('Change email'),
+                      onTap: () => print('TODO')),
+                  ListTile(
+                      leading: const Icon(Icons.lock_outline),
+                      title: const Text('Change password'),
+                      onTap: () => print('TODO')),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Sign Out'),
+                    onTap: _signOut,
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                    ),
+                    title: const Text('Delete account'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(ViewMessagesPage.routeName),
+                  ),
+                ],
+              ),
             ),
-    );
+          );
+        });
   }
 }
