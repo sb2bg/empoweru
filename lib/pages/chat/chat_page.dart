@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 import 'package:age_sync/utils/message.dart';
@@ -8,12 +9,12 @@ import 'package:age_sync/utils/profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart';
 
-import '../utils/constants.dart';
-
 class ChatPage extends StatefulWidget {
   static const routeName = '/chat';
 
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({Key? key, required this.roomId}) : super(key: key);
+
+  final String roomId;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -22,7 +23,6 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
   late final Profile _me;
-  late Profile _them;
 
   @override
   void initState() {
@@ -32,6 +32,7 @@ class _ChatPageState extends State<ChatPage> {
       _messagesStream = supabase
           .from('messages')
           .stream(primaryKey: ['id'])
+          .eq('room_id', widget.roomId)
           .order('created_at')
           .map((maps) => maps
               .map((map) => Message.fromMap(map: map, myUserId: myUserId))
@@ -65,8 +66,6 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    _them = ModalRoute.of(context)!.settings.arguments as Profile;
-
     return Scaffold(
       appBar: AppBar(
           title: const Text('Chat'),
@@ -100,7 +99,9 @@ class _ChatPageState extends State<ChatPage> {
 
                             return _ChatBubble(
                               message: message,
-                              profile: message.isMine ? _me : _them,
+                              profile: message.isMine
+                                  ? _me
+                                  : _me, // TODO: fix this, it's not _me for the other person
                             );
                           },
                         ),

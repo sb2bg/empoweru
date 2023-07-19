@@ -1,7 +1,9 @@
-import 'package:age_sync/pages/chat_page.dart';
+import 'package:age_sync/pages/chat/new_chat_page.dart';
+import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/profile.dart';
+import '../../utils/profile.dart';
+import 'chat_page.dart';
 
 class ViewMessagesPage extends StatefulWidget {
   static const routeName = '/messages';
@@ -24,59 +26,59 @@ class _ViewMessagesPageState extends State<ViewMessagesPage> {
   @override
   void initState() {
     _profilesStream = Stream.value([
-      Profile(
-        id: '1',
-        name: 'Timothy Dee',
-        avatarUrl: 'https://picsum.photos/200',
-      ),
-      Profile(
-        id: '2',
-        name: 'Stormy McDaniels',
-        avatarUrl: 'https://picsum.photos/200',
-      ),
-      Profile(
-        id: '3',
-        name: 'Lime Green',
-        avatarUrl: 'https://picsum.photos/200',
-      ),
+      // Profile(
+      //   id: '1',
+      //   name: 'Timothy Dee',
+      //   avatarUrl: 'https://picsum.photos/200',
+      // ),
+      // Profile(
+      //   id: '2',
+      //   name: 'Stormy McDaniels',
+      //   avatarUrl: 'https://picsum.photos/200',
+      // ),
+      // Profile(
+      //   id: '3',
+      //   name: 'Lime Green',
+      //   avatarUrl: 'https://picsum.photos/200',
+      // ),
     ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Messages'),
-        ),
-        body: StreamBuilder<List<Profile>>(
-          stream: _profilesStream,
-          builder: (context, snapshot) {
-            final profiles = snapshot.data ?? [];
-
-            return profiles.isEmpty
-                ? const Center(
-                    child: Text('You have no messages.',
-                        style: TextStyle(color: Colors.grey)))
-                : ListView.separated(
-                    itemBuilder: (context, index) {
-                      final profile = profiles[index];
-                      return _MessageEntry(
-                        profile: profile,
-                        lastText:
-                            '***REMOVED***',
-                      );
-                    },
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemCount: profiles.length,
-                  );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
+      appBar: AppBar(title: const Text('Messages'), actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
           onPressed: () {
-            print("TODO");
+            Navigator.of(context).pushNamed(NewChatPage.routeName);
           },
-          child: const Icon(Icons.add),
-        ));
+        )
+      ]),
+      body: StreamBuilder<List<Profile>>(
+        stream: _profilesStream,
+        builder: (context, snapshot) {
+          final profiles = snapshot.data ?? [];
+
+          return profiles.isEmpty
+              ? const Center(
+                  child: Text('You have no messages.',
+                      style: TextStyle(color: Colors.grey)))
+              : ListView.separated(
+                  itemBuilder: (context, index) {
+                    final profile = profiles[index];
+                    return _MessageEntry(
+                      profile: profile,
+                      lastText:
+                          'Hey!!! I saw u were in town. Wanted to have coffee, are you down?????',
+                    );
+                  },
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemCount: profiles.length,
+                );
+        },
+      ),
+    );
   }
 }
 
