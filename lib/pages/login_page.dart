@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:age_sync/pages/account_page.dart';
-import 'package:age_sync/pages/email_sign_up_page.dart';
+import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -132,7 +132,8 @@ class _LoginPageState extends State<LoginPage> {
                           )
                         ],
                       )
-                    ]))
+                    ])),
+                const SizedBox(height: 50),
               ],
             ),
           ),
