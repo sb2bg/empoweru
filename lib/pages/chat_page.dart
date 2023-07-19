@@ -21,42 +21,52 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
-  late final Profile _them;
   late final Profile _me;
+  late Profile _them;
 
   @override
   void initState() {
-    final myUserId = supabase.auth.currentUser!.id;
+    try {
+      final myUserId = supabase.auth.currentUser!.id;
 
-    _messagesStream = supabase
-        .from('messages')
-        .stream(primaryKey: ['id'])
-        .order('created_at')
-        .map((maps) => maps
-            .map((map) => Message.fromMap(map: map, myUserId: myUserId))
-            .toList());
+      _messagesStream = supabase
+          .from('messages')
+          .stream(primaryKey: ['id'])
+          .order('created_at')
+          .map((maps) => maps
+              .map((map) => Message.fromMap(map: map, myUserId: myUserId))
+              .toList());
 
-    _loadProfiles(myUserId, 'todo');
+      _loadProfile(myUserId);
+    } on PostgrestException catch (error) {
+      context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
+    }
 
     super.initState();
   }
 
-  Future<void> _loadProfiles(String myId, String friendId) async {
-    // final friend =
-    //     await supabase.from('profiles').select().eq('id', friendId).single();
-    // final me = await supabase.from('profiles').select().eq('id', myId).single();
+  Future<void> _loadProfile(String id) async {
+    try {
+      final map =
+          await supabase.from('profiles').select().eq('id', id).single();
+      final profile = Profile.fromMap(map);
 
-    // final friendProfile = Profile.fromMap(friend);
-    // final myProfile = Profile.fromMap(me);
-
-    // setState(() {
-    //   _them = friendProfile;
-    //   _me = myProfile;
-    // });
+      setState(() {
+        _me = profile;
+      });
+    } on PostgrestException catch (error) {
+      context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    _them = ModalRoute.of(context)!.settings.arguments as Profile;
+
     return Scaffold(
       appBar: AppBar(
           title: const Text('Chat'),
