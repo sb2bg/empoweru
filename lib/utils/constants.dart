@@ -8,7 +8,7 @@ const iosClientId =
     '585037508158-uh107osoinaus299vu9vb9kcuav3ev0q.apps.googleusercontent.com';
 
 final supabase = Supabase.instance.client;
-const preloader = Center(child: CircularProgressIndicator());
+const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
@@ -25,5 +25,19 @@ extension ShowSnackBar on BuildContext {
 
   void showErrorSnackBar({required String message}) {
     showSnackBar(message: message, backgroundColor: Colors.red);
+  }
+}
+
+extension Navigate on BuildContext {
+  void pushNamed(String routeName) {
+    Navigator.of(this).pushNamed(routeName);
+  }
+
+  void pushReplacementNamed(String routeName) {
+    Navigator.of(this).pushReplacementNamed(routeName);
+  }
+
+  void pop() {
+    Navigator.of(this).pop();
   }
 }
