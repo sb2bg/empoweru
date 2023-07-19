@@ -39,6 +39,7 @@ dependencies:
   flutter_appauth: ^6.0.0
   crypto: ^3.0.3
   timeago: ^3.5.0
+  cached_network_image: ^3.2.3
 
 dev_dependencies:
   flutter_test:
