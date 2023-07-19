@@ -117,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.black),
                         onPressed: () => Navigator.of(context)
-                            .pushNamed(EmailSignUpPage.routeName),
+                            .pushNamed(EmailLogInPage.routeName),
                         child:
                             Text(_isLoading ? 'Loading' : 'Sign in with Email'),
                       ),

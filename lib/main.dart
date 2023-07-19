@@ -1,6 +1,6 @@
 import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/chat_page.dart';
-import 'package:age_sync/pages/email_sign_up_page.dart';
+import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:age_sync/pages/login_page.dart';
 import 'package:age_sync/pages/splash.dart';
 import 'package:age_sync/pages/view_messages.dart';
@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
         AccountPage.routeName: (_) => const AccountPage(),
         ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
         ChatPage.routeName: (_) => const ChatPage(),
-        EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
+        EmailLogInPage.routeName: (_) => const EmailLogInPage(),
       },
     );
   }

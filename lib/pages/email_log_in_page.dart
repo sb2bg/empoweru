@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class EmailSignUpPage extends StatefulWidget {
+class EmailLogInPage extends StatefulWidget {
   static const routeName = '/email-sign-up';
 
-  const EmailSignUpPage({super.key});
+  const EmailLogInPage({super.key});
 
   @override
-  State<EmailSignUpPage> createState() => _EmailSignUpPageState();
+  State<EmailLogInPage> createState() => _EmailLogInPageState();
 }
 
-class _EmailSignUpPageState extends State<EmailSignUpPage> {
+class _EmailLogInPageState extends State<EmailLogInPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
