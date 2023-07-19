@@ -11,19 +11,9 @@ import 'package:timeago/timeago.dart';
 import '../utils/constants.dart';
 
 class ChatPage extends StatefulWidget {
-  static String routeName = '/chat';
+  static const routeName = '/chat';
 
-  const ChatPage({Key? key, required this.profileId}) : super(key: key);
-
-  final String profileId;
-
-  static Route<void> route(String profileId) {
-    return MaterialPageRoute(
-      builder: (context) => ChatPage(
-        profileId: profileId,
-      ),
-    );
-  }
+  const ChatPage({Key? key}) : super(key: key);
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -45,7 +35,8 @@ class _ChatPageState extends State<ChatPage> {
         .map((maps) => maps
             .map((map) => Message.fromMap(map: map, myUserId: myUserId))
             .toList());
-    _loadProfiles(myUserId, widget.profileId);
+
+    _loadProfiles(myUserId, 'todo');
 
     super.initState();
   }

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 
 class SplashPage extends StatefulWidget {
-  static String routeName = '/';
+  static const routeName = '/';
 
   const SplashPage({super.key});
 

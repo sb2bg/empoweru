@@ -11,7 +11,7 @@ import '../supabase/auth/google.dart';
 import '../utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
-  static String routeName = '/login';
+  static const routeName = '/login';
 
   const LoginPage({super.key});
 

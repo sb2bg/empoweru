@@ -1,11 +1,10 @@
 import 'package:age_sync/pages/chat_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/profile.dart';
 
 class ViewMessagesPage extends StatefulWidget {
-  static String routeName = '/messages';
+  static const routeName = '/messages';
 
   const ViewMessagesPage({Key? key}) : super(key: key);
 
