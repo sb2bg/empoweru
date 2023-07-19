@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         LoginPage.routeName: (_) => const LoginPage(),
         AccountPage.routeName: (_) => const AccountPage(),
         ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
-        ChatPage.routeName: (context) => ChatPage(profileId: "1"),
+        ChatPage.routeName: (_) => const ChatPage(),
         EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
       },
     );
