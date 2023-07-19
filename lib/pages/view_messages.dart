@@ -31,7 +31,7 @@ class _ViewMessagesPageState extends State<ViewMessagesPage> {
       ),
       Profile(
         id: '2',
-        name: 'Sammy McDaniels',
+        name: 'Stormy McDaniels',
         avatarUrl: 'https://picsum.photos/200',
       ),
       Profile(
@@ -66,8 +66,7 @@ class _ViewMessagesPageState extends State<ViewMessagesPage> {
                             '***REMOVED***',
                       );
                     },
-                    separatorBuilder: (context, index) =>
-                        Divider(color: Colors.grey[900]),
+                    separatorBuilder: (context, index) => const Divider(),
                     itemCount: profiles.length,
                   );
           },
