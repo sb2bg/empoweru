@@ -1,9 +1,13 @@
+import 'package:age_sync/pages/login_page.dart';
+import 'package:age_sync/pages/view_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../utils/constants.dart';
 
 class AccountPage extends StatefulWidget {
+  static String routeName = '/account';
+
   const AccountPage({super.key});
 
   @override
@@ -106,7 +110,7 @@ class _AccountPageState extends State<AccountPage> {
       );
     } finally {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
       }
     }
   }
@@ -150,7 +154,8 @@ class _AccountPageState extends State<AccountPage> {
                 const SizedBox(height: 18),
                 TextButton(onPressed: _signOut, child: const Text('Sign Out')),
                 TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/messages'),
+                    onPressed: () => Navigator.pushNamed(
+                        context, ViewMessagesPage.routeName),
                     child: const Text('Go to messages'))
               ],
             ),

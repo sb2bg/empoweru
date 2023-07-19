@@ -54,12 +54,12 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        '/': (_) => const SplashPage(),
-        '/login': (_) => const LoginPage(),
-        '/account': (_) => const AccountPage(),
-        '/messages': (_) => const ViewMessagesPage(),
-        '/chat': (context) => ChatPage(profileId: "1"),
-        '/email-sign-up': (_) => const EmailSignUpPage(),
+        SplashPage.routeName: (_) => const SplashPage(),
+        LoginPage.routeName: (_) => const LoginPage(),
+        AccountPage.routeName: (_) => const AccountPage(),
+        ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
+        ChatPage.routeName: (context) => ChatPage(profileId: "1"),
+        EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
       },
     );
   }

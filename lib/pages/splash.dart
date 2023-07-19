@@ -1,8 +1,12 @@
+import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
 
 class SplashPage extends StatefulWidget {
+  static String routeName = '/';
+
   const SplashPage({super.key});
 
   @override
@@ -26,9 +30,9 @@ class _SplashPageState extends State<SplashPage> {
     final session = supabase.auth.currentSession;
 
     if (session != null) {
-      Navigator.of(context).pushReplacementNamed('/account');
+      Navigator.of(context).pushReplacementNamed(AccountPage.routeName);
     } else {
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
     }
   }
 

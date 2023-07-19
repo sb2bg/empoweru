@@ -1,8 +1,12 @@
+import 'package:age_sync/pages/chat_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/profile.dart';
 
 class ViewMessagesPage extends StatefulWidget {
+  static String routeName = '/messages';
+
   const ViewMessagesPage({Key? key}) : super(key: key);
 
   static Route<void> route() {
@@ -99,7 +103,7 @@ class _MessageEntry extends StatelessWidget {
             style: const TextStyle(color: Colors.grey)),
       ),
       onTap: () {
-        Navigator.of(context).pushNamed('/chat', arguments: profile);
+        Navigator.of(context).pushNamed(ChatPage.routeName, arguments: profile);
       },
       onLongPress: () {
         showModalBottomSheet(
@@ -122,6 +126,9 @@ class _MessageEntry extends StatelessWidget {
                     print("TODO");
                   },
                 ),
+                const SizedBox(
+                  height: 16,
+                )
               ],
             );
           },

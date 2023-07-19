@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailSignUpPage extends StatefulWidget {
+  static String routeName = '/email-sign-up';
+
   const EmailSignUpPage({super.key});
 
   @override

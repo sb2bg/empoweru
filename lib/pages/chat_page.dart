@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:age_sync/pages/account_page.dart';
 import 'package:flutter/material.dart';
 
 import 'package:age_sync/utils/message.dart';
@@ -10,6 +11,8 @@ import 'package:timeago/timeago.dart';
 import '../utils/constants.dart';
 
 class ChatPage extends StatefulWidget {
+  static String routeName = '/chat';
+
   const ChatPage({Key? key, required this.profileId}) : super(key: key);
 
   final String profileId;
@@ -48,17 +51,17 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _loadProfiles(String myId, String friendId) async {
-    final friend =
-        await supabase.from('profiles').select().eq('id', friendId).single();
-    final me = await supabase.from('profiles').select().eq('id', myId).single();
+    // final friend =
+    //     await supabase.from('profiles').select().eq('id', friendId).single();
+    // final me = await supabase.from('profiles').select().eq('id', myId).single();
 
-    final friendProfile = Profile.fromMap(friend);
-    final myProfile = Profile.fromMap(me);
+    // final friendProfile = Profile.fromMap(friend);
+    // final myProfile = Profile.fromMap(me);
 
-    setState(() {
-      _them = friendProfile;
-      _me = myProfile;
-    });
+    // setState(() {
+    //   _them = friendProfile;
+    //   _me = myProfile;
+    // });
   }
 
   @override
@@ -69,7 +72,8 @@ class _ChatPageState extends State<ChatPage> {
           leading: const BackButton(),
           actions: [
             IconButton(
-              onPressed: () => Navigator.of(context).pushNamed('/account'),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AccountPage.routeName),
               icon: const Icon(Icons.account_circle),
             ),
           ]),

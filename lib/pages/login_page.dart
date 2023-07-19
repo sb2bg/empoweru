@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,6 +11,8 @@ import '../supabase/auth/google.dart';
 import '../utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
+  static String routeName = '/login';
+
   const LoginPage({super.key});
 
   @override
@@ -60,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (session != null) {
         _redirecting = true;
-        Navigator.of(context).pushReplacementNamed('/account');
+        Navigator.of(context).pushReplacementNamed(AccountPage.routeName);
       }
     });
 
@@ -112,8 +116,8 @@ class _LoginPageState extends State<LoginPage> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.black),
-                        onPressed: () =>
-                            Navigator.of(context).pushNamed('/email-sign-up'),
+                        onPressed: () => Navigator.of(context)
+                            .pushNamed(EmailSignUpPage.routeName),
                         child:
                             Text(_isLoading ? 'Loading' : 'Sign in with Email'),
                       ),
@@ -122,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                           const Text('Don\'t have an account?'),
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).pushNamed('/sign-up');
+                              Navigator.of(context).pushNamed('TODO');
                             },
                             child: const Text('Sign up'),
                           )
