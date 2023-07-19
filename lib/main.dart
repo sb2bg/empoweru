@@ -50,6 +50,14 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
+        dividerTheme: DividerThemeData(
+          color: Colors.grey[900],
+        ),
+        listTileTheme: ListTileThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
         useMaterial3: true,
       ),
       initialRoute: '/',
