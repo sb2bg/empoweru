@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(10),
             ),
           ),
         ),
@@ -56,8 +56,20 @@ class MyApp extends StatelessWidget {
         ),
         listTileTheme: ListTileThemeData(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(10),
           ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            prefixIconColor: Colors.grey[600],
+            suffixIconColor: Colors.grey[600],
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            filled: true,
+            fillColor: Colors.grey[900],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         useMaterial3: true,
       ),
