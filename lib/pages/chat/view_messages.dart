@@ -1,6 +1,8 @@
 import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../utils/profile.dart';
 import 'chat_page.dart';
@@ -21,27 +23,30 @@ class ViewMessagesPage extends StatefulWidget {
 }
 
 class _ViewMessagesPageState extends State<ViewMessagesPage> {
-  late final Stream<List<Profile>> _profilesStream;
+  late final Stream<List<Profile>> _roomStream;
 
   @override
   void initState() {
-    _profilesStream = Stream.value([
-      // Profile(
-      //   id: '1',
-      //   name: 'Timothy Dee',
-      //   avatarUrl: 'https://picsum.photos/200',
-      // ),
-      // Profile(
-      //   id: '2',
-      //   name: 'Stormy McDaniels',
-      //   avatarUrl: 'https://picsum.photos/200',
-      // ),
-      // Profile(
-      //   id: '3',
-      //   name: 'Lime Green',
-      //   avatarUrl: 'https://picsum.photos/200',
-      // ),
-    ]);
+    super.initState();
+    _loadRooms();
+  }
+
+  _loadRooms() async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      _roomStream = supabase
+          .from('room_participants')
+          .stream(primaryKey: ['room_id'])
+          .eq('profile_id', userId)
+          .order('created_at')
+          .map((maps) =>
+              maps.map((map) => Profile.fromMap(map['profile_id'])).toList());
+    } on PostgrestException catch (error) {
+      context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
+    }
   }
 
   @override
@@ -51,12 +56,15 @@ class _ViewMessagesPageState extends State<ViewMessagesPage> {
         IconButton(
           icon: const Icon(Icons.add),
           onPressed: () {
-            Navigator.of(context).pushNamed(NewChatPage.routeName);
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => const NewChatPage(),
+            );
           },
         )
       ]),
-      body: StreamBuilder<List<Profile>>(
-        stream: _profilesStream,
+      body: StreamBuilder(
+        stream: _roomStream,
         builder: (context, snapshot) {
           final profiles = snapshot.data ?? [];
 
@@ -94,7 +102,7 @@ class _MessageEntry extends StatelessWidget {
     return InkWell(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: NetworkImage(profile.avatarUrl),
+          backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
         ),
         title: Text(profile.name),
         subtitle: Text(lastText,
