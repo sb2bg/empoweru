@@ -36,6 +36,8 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
+  // TODO: recover session (Timer? recoverSessionTimer;)
+
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
