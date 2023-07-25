@@ -26,6 +26,8 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
+    super.initState();
+
     try {
       final myUserId = supabase.auth.currentUser!.id;
 
@@ -44,8 +46,6 @@ class _ChatPageState extends State<ChatPage> {
     } catch (_) {
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
-
-    super.initState();
   }
 
   Future<void> _loadProfile(String id) async {
@@ -77,7 +77,7 @@ class _ChatPageState extends State<ChatPage> {
               icon: const Icon(Icons.account_circle),
             ),
           ]),
-      body: StreamBuilder<List<Message>>(
+      body: StreamBuilder(
         stream: _messagesStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -106,7 +106,7 @@ class _ChatPageState extends State<ChatPage> {
                           },
                         ),
                 ),
-                const _MessageBar(),
+                _MessageBar(roomId: widget.roomId),
               ],
             );
           } else {
@@ -120,16 +120,16 @@ class _ChatPageState extends State<ChatPage> {
 
 /// Set of widget that contains TextField and Button to submit message
 class _MessageBar extends StatefulWidget {
-  const _MessageBar({
-    Key? key,
-  }) : super(key: key);
+  const _MessageBar({required this.roomId});
+
+  final String roomId;
 
   @override
   State<_MessageBar> createState() => _MessageBarState();
 }
 
 class _MessageBarState extends State<_MessageBar> {
-  late final TextEditingController _textController;
+  final TextEditingController _textController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -172,12 +172,6 @@ class _MessageBarState extends State<_MessageBar> {
   }
 
   @override
-  void initState() {
-    _textController = TextEditingController();
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _textController.dispose();
     super.dispose();
@@ -186,14 +180,18 @@ class _MessageBarState extends State<_MessageBar> {
   void _submitMessage() async {
     final text = _textController.text;
     final myUserId = supabase.auth.currentUser!.id;
+
     if (text.isEmpty) {
       return;
     }
+
     _textController.clear();
+
     try {
       await supabase.from('messages').insert({
         'profile_id': myUserId,
         'content': text,
+        'room_id': widget.roomId,
       });
     } on PostgrestException catch (error) {
       context.showErrorSnackBar(message: error.message);
