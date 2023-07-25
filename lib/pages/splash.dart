@@ -1,5 +1,5 @@
 import 'package:age_sync/pages/account_page.dart';
-import 'package:age_sync/pages/login_page.dart';
+import 'package:age_sync/pages/log_in_page.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
@@ -32,7 +32,7 @@ class _SplashPageState extends State<SplashPage> {
     if (session != null) {
       Navigator.of(context).pushReplacementNamed(AccountPage.routeName);
     } else {
-      Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+      Navigator.of(context).pushReplacementNamed(LogInPage.logInRouteName);
     }
   }
 
