@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -117,7 +118,7 @@ class FriendEntry extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: ListTile(
           leading: CircleAvatar(
-            backgroundImage: NetworkImage(profile.avatarUrl),
+            backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
           ),
           title: Text(profile.name),
           trailing: IconButton(
