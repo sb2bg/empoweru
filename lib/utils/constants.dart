@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'observer.dart';
+
 const supabaseUrl = 'https://xtxynmkzjewotpmxxxvy.supabase.co';
 const supabaseAnonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0eHlubWt6amV3b3RwbXh4eHZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg4MDAxNzAsImV4cCI6MjAwNDM3NjE3MH0.dHo4Jcnjx2xLuTRXWdWqQByAn6G-1DL6bqPQ5lplyZA';
@@ -30,15 +32,36 @@ extension ShowSnackBar on BuildContext {
 }
 
 extension Navigate on BuildContext {
-  void pushNamed(String routeName) {
-    Navigator.of(this).pushNamed(routeName);
+  NavigatorState get navigator => Navigator.of(this);
+
+  void pushNamed(String routeName, {Object? arguments}) {
+    navigator.pushNamed(routeName, arguments: arguments);
   }
 
   void pushReplacementNamed(String routeName) {
-    Navigator.of(this).pushReplacementNamed(routeName);
+    navigator.pushReplacementNamed(routeName);
   }
 
   void pop() {
-    Navigator.of(this).pop();
+    navigator.pop();
+  }
+
+  void popAndPushNamed(String routeName) {
+    navigator.popAndPushNamed(routeName);
+  }
+
+  void popOrPushNamed(String routeName) {
+    Route? previousRoute = navObserver.previousRoute;
+
+    if (!navigator.canPop() || previousRoute == null) {
+      pushNamed(routeName);
+      return;
+    }
+
+    if (previousRoute.settings.name == routeName) {
+      pop();
+    } else {
+      pushNamed(routeName);
+    }
   }
 }
