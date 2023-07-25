@@ -65,3 +65,35 @@ extension Navigate on BuildContext {
     }
   }
 }
+
+extension DatabaseQuery on BuildContext {
+  tryDatabase(Function() func,
+      {Function(Object)? onError, Function()? onDone}) {
+    try {
+      func();
+    } on PostgrestException catch (error) {
+      showErrorSnackBar(message: error.message);
+      onError?.call(error);
+    } catch (error) {
+      showErrorSnackBar(message: unexpectedErrorMessage);
+      onError?.call(error);
+    } finally {
+      onDone?.call();
+    }
+  }
+
+  Future<void> tryDatabaseAsync(Future<void> Function() func,
+      {Function(Object)? onError, Function()? onDone}) async {
+    try {
+      await func();
+    } on PostgrestException catch (error) {
+      showErrorSnackBar(message: error.message);
+      onError?.call(error);
+    } catch (error) {
+      showErrorSnackBar(message: unexpectedErrorMessage);
+      onError?.call(error);
+    } finally {
+      onDone?.call();
+    }
+  }
+}
