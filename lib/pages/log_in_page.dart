@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:age_sync/pages/account_page.dart';
-import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,19 +7,39 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../supabase/auth/facebook.dart';
 import '../supabase/auth/google.dart';
 import '../utils/constants.dart';
+import 'account_page.dart';
+import 'email_log_in_page.dart';
+import 'email_sign_up_page.dart';
 
-class LoginPage extends StatefulWidget {
-  static const routeName = '/login';
+enum LogInType {
+  signUp('Sign up', LogInPage.signUpRouteName),
+  signIn('Log in', LogInPage.logInRouteName);
 
-  const LoginPage({super.key});
+  const LogInType(this.title, this.routeName);
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
+  final String title;
+  final String routeName;
+
+  LogInType alternate() {
+    return this == LogInType.signUp ? LogInType.signIn : LogInType.signUp;
+  }
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LogInPage extends StatefulWidget {
+  const LogInPage({super.key, required this.type});
+
+  final LogInType type;
+  static const String logInRouteName = '/login';
+  static const String signUpRouteName = '/sign-up';
+
+  @override
+  State<LogInPage> createState() => _LogInPageState();
+}
+
+class _LogInPageState extends State<LogInPage> {
   bool _isLoading = false;
   bool _redirecting = false;
+  late final String _title;
 
   late final StreamSubscription<AuthState> _authStateSubscription;
 
@@ -58,6 +76,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
+    super.initState();
+
+    _title = widget.type.title;
+
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
       if (_redirecting) return;
       final session = data.session;
@@ -67,8 +89,6 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.of(context).pushReplacementNamed(AccountPage.routeName);
       }
     });
-
-    super.initState();
   }
 
   @override
@@ -81,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Sign In'),
+          title: Text(_title),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
@@ -90,9 +110,9 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text('Sign in',
-                    style:
-                        TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                Text(_title,
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold)),
                 const Text('to continue to AgeSync'),
                 const SizedBox(height: 16),
                 IntrinsicWidth(
@@ -103,37 +123,46 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed:
                             _isLoading ? null : () => _signIn(signInWithGoogle),
                         child: Text(
-                            _isLoading ? 'Loading' : 'Sign in with Google'),
+                            _isLoading ? 'Loading' : '$_title with Google'),
                       ),
                       ElevatedButton(
                         onPressed: _isLoading
                             ? null
                             : () => _signIn(signInWithFacebook),
                         child: Text(
-                            _isLoading ? 'Loading' : 'Sign in with Facebook'),
+                            _isLoading ? 'Loading' : '$_title with Facebook'),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.black),
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(EmailLogInPage.routeName),
+                        onPressed: () => Navigator.of(context).pushNamed(
+                            widget.type == LogInType.signUp
+                                ? EmailSignUpPage.routeName
+                                : EmailLogInPage.routeName),
                         child:
-                            Text(_isLoading ? 'Loading' : 'Sign in with Email'),
+                            Text(_isLoading ? 'Loading' : '$_title with Email'),
                       ),
                       Row(
                         children: [
-                          const Text('Don\'t have an account?'),
+                          Text(
+                              widget.type == LogInType.signUp
+                                  ? 'Already have an account?'
+                                  : 'Don\'t have an account?',
+                              style: const TextStyle(fontSize: 16)),
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).pushNamed('TODO');
+                              context.popOrPushNamed(
+                                  widget.type.alternate().routeName);
                             },
-                            child: const Text('Sign up'),
+                            child: Text(
+                              widget.type.alternate().title,
+                            ),
                           )
                         ],
                       )
                     ])),
-                const SizedBox(height: 50),
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
               ],
             ),
           ),
