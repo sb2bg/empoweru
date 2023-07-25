@@ -1,11 +1,11 @@
-import 'package:age_sync/pages/login_page.dart';
-import 'package:age_sync/pages/view_messages.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../utils/constants.dart';
 import '../utils/profile.dart';
+import 'chat/view_messages.dart';
+import 'log_in_page.dart';
 
 class AccountPage extends StatefulWidget {
   static const routeName = '/account';
@@ -24,26 +24,27 @@ class _AccountPageState extends State<AccountPage> {
     try {
       final userId = supabase.auth.currentUser!.id;
 
-      final data = await supabase
-          .from('profiles')
-          .select<Map<String, dynamic>>()
-          .eq('id', userId)
-          .single();
+      final profile = await Profile.fromUuid(userId);
 
       setState(() {
-        _profile = Profile.fromMap(data);
-        _loading.value = false;
+        _profile = profile;
       });
     } on PostgrestException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
-      context.showErrorSnackBar(message: error.toString());
+      if (mounted) {
+        context.showErrorSnackBar(message: error.toString());
+      }
+    } finally {
+      if (mounted) {
+        _loading.value = false;
+      }
     }
   }
 
   _signOut() {
-    supabase.auth.signOut().then((value) =>
-        {if (mounted) context.pushReplacementNamed(LoginPage.routeName)});
+    supabase.auth.signOut().then(
+        (value) => {context.pushReplacementNamed(LogInPage.logInRouteName)});
   }
 
   @override
