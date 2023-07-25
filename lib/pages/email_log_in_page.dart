@@ -1,10 +1,13 @@
+import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/supabase/auth/email.dart';
+import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/widgets/password_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailLogInPage extends StatefulWidget {
-  static const routeName = '/email-sign-up';
+  static const routeName = '/email-log-in';
 
   const EmailLogInPage({super.key});
 
@@ -53,8 +56,7 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text('Sign In with Email'), leading: const BackButton()),
+      appBar: AppBar(title: const Text('Sign in'), leading: const BackButton()),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -62,15 +64,12 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(
-                labelText: 'Email',
+                hintText: 'Email',
+                prefixIcon: Icon(Icons.email),
               ),
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-            ),
+            const SizedBox(height: 8),
+            PasswordTextField(controller: _passwordController),
             const SizedBox(height: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,19 +85,22 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
                         child: const Text('Sign In'),
                       ),
                     ]),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account?"),
-                    TextButton(
-                        onPressed: _isLoading ? null : () => print("TODO"),
-                        style: TextButton.styleFrom(
-                            animationDuration: Duration.zero),
-                        child: const Text('Sign Up'))
-                  ],
-                )
               ],
             ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Don't have an account?"),
+                TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () =>
+                            context.popOrPushNamed(EmailSignUpPage.routeName),
+                    child: const Text('Sign Up'))
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
         ),
       ),
