@@ -8,6 +8,7 @@ const iosClientId =
     '585037508158-uh107osoinaus299vu9vb9kcuav3ev0q.apps.googleusercontent.com';
 
 final supabase = Supabase.instance.client;
+final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';

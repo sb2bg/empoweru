@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Home',
+        navigatorObservers: [navObserver],
       themeMode: ThemeMode.dark,
       darkTheme: ThemeData(
         colorScheme: const ColorScheme.dark(),
