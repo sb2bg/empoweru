@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
   late final Profile _me;
+  var _loading = true;
 
   @override
   void initState() {
@@ -61,6 +63,12 @@ class _ChatPageState extends State<ChatPage> {
       context.showErrorSnackBar(message: error.message);
     } catch (_) {
       context.showErrorSnackBar(message: unexpectedErrorMessage);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -72,48 +80,52 @@ class _ChatPageState extends State<ChatPage> {
           leading: const BackButton(),
           actions: [
             IconButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AccountPage.routeName),
+              onPressed: () => Navigator.of(context).pushNamed(
+                  ViewAccountPage.routeName,
+                  arguments: _me
+                      .id), // TODO: fix this, it's not _me for the other person
               icon: const Icon(Icons.account_circle),
             ),
           ]),
-      body: StreamBuilder(
-        stream: _messagesStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final messages = snapshot.data ?? [];
+      body: _loading
+          ? preloader
+          : StreamBuilder(
+              stream: _messagesStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final messages = snapshot.data ?? [];
 
-            return Column(
-              children: [
-                Expanded(
-                  child: messages.isEmpty
-                      ? const Center(
-                          child: Text('Say hello',
-                              style: TextStyle(color: Colors.grey)),
-                        )
-                      : ListView.builder(
-                          reverse: true,
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final message = messages[index];
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: messages.isEmpty
+                            ? const Center(
+                                child: Text('Say hello',
+                                    style: TextStyle(color: Colors.grey)),
+                              )
+                            : ListView.builder(
+                                reverse: true,
+                                itemCount: messages.length,
+                                itemBuilder: (context, index) {
+                                  final message = messages[index];
 
-                            return _ChatBubble(
-                              message: message,
-                              profile: message.isMine
-                                  ? _me
-                                  : _me, // TODO: fix this, it's not _me for the other person
-                            );
-                          },
-                        ),
-                ),
-                _MessageBar(roomId: widget.roomId),
-              ],
-            );
-          } else {
-            return preloader;
-          }
-        },
-      ),
+                                  return _ChatBubble(
+                                    message: message,
+                                    profile: message.isMine
+                                        ? _me
+                                        : _me, // TODO: fix this, it's not _me for the other person
+                                  );
+                                },
+                              ),
+                      ),
+                      _MessageBar(roomId: widget.roomId),
+                    ],
+                  );
+                } else {
+                  return preloader;
+                }
+              },
+            ),
     );
   }
 }
