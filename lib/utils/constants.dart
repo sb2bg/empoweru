@@ -1,3 +1,4 @@
+import 'package:age_sync/utils/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +13,12 @@ const iosClientId =
 final supabase = Supabase.instance.client;
 final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
+const error = Scaffold(
+    body: Center(
+        child: Text('Failed to load data.',
+            style: TextStyle(
+              color: Colors.grey,
+            ))));
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
@@ -95,5 +102,54 @@ extension DatabaseQuery on BuildContext {
     } finally {
       onDone?.call();
     }
+  }
+}
+
+extension ShowModalBottomSheet on BuildContext {
+  void showMenu(List<ListTile> tiles) {
+    showModalBottomSheet(
+      context: this,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: tiles,
+        ),
+      ),
+    );
+  }
+}
+
+Profile? cachedProfile;
+DateTime? lastProfileFetch;
+
+extension CurrentUser on SupabaseClient {
+  Future<Profile> getCurrentUser() async {
+    if (cachedProfile != null &&
+        lastProfileFetch != null &&
+        DateTime.now().difference(lastProfileFetch!).inMinutes < 5) {
+      return cachedProfile!;
+    }
+
+    var currentUser = supabase.auth.currentUser;
+
+    if (currentUser == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final id = currentUser.id;
+    cachedProfile = await Profile.fromId(id);
+    lastProfileFetch = DateTime.now();
+
+    return cachedProfile!;
+  }
+
+  String get userId {
+    final currentUser = supabase.auth.currentUser;
+
+    if (currentUser == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    return currentUser.id;
   }
 }
