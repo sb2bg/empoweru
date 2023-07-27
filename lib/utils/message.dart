@@ -1,3 +1,5 @@
+import 'constants.dart';
+
 class Message {
   Message({
     required this.id,
@@ -7,27 +9,52 @@ class Message {
     required this.isMine,
   });
 
-  /// ID of the message
   final String id;
-
-  /// ID of the user who posted the message
   final String profileId;
-
-  /// Text content of the message
   final String content;
-
-  /// Date and time when the message was created
   final DateTime createdAt;
-
-  /// Whether the message is sent by the user or not.
   final bool isMine;
 
   Message.fromMap({
     required Map<String, dynamic> map,
-    required String myUserId,
   })  : id = map['id'],
         profileId = map['profile_id'],
         content = map['content'],
         createdAt = DateTime.parse(map['created_at']),
-        isMine = myUserId == map['profile_id'];
+        isMine = supabase.userId == map['profile_id'];
+
+  static Future<Message> fromId(String id) async {
+    final map = await supabase.from('messages').select().eq('id', id).single();
+    return Message.fromMap(map: map);
+  }
+
+  // TODO: throws if no messages
+  static Future<Message?> lastMessageFromRoomId(String id) async {
+    return await supabase
+        .from('messages')
+        .select()
+        .eq('room_id', id)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle()
+        .then((map) => map != null ? Message.fromMap(map: map) : null);
+  }
+
+  delete() async {
+    await supabase.from('messages').delete().eq('id', id);
+  }
+
+  static create(String user, String contents, String roomId) async {
+    await supabase
+        .from('messages')
+        .insert([
+          {
+            'profile_id': user,
+            'content': contents,
+            'room_id': roomId,
+          }
+        ])
+        .select('id')
+        .single();
+  }
 }
