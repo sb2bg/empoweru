@@ -20,14 +20,11 @@ class _AccountPageState extends LoadingState<AccountPage> {
   late final Profile _profile;
 
   @override
-  Future<void> onInit() async {
-    await context.tryDatabaseAsync(() async {
-      final userId = supabase.auth.currentUser!.id;
-      final profile = await Profile.fromUuid(userId);
+  onInit() async {
+    final profile = await supabase.getCurrentUser();
 
-      setState(() {
-        _profile = profile;
-      });
+    setState(() {
+      _profile = profile;
     });
   }
 
@@ -48,9 +45,45 @@ class _AccountPageState extends LoadingState<AccountPage> {
       child: Column(
         children: [
           ListTile(
-              leading: CircleAvatar(
-                radius: 20,
-                backgroundImage: CachedNetworkImageProvider(_profile.avatarUrl),
+              leading: GestureDetector(
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                            title: const Text('Change avatar'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.camera_alt),
+                                  title: const Text('Take a photo'),
+                                  onTap: () => print('TODO'),
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.photo),
+                                  title: const Text('Choose from gallery'),
+                                  onTap: () => print('TODO'),
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.delete),
+                                  title: const Text('Remove avatar'),
+                                  onTap: () => print('TODO'),
+                                ),
+                                const Divider(),
+                                ListTile(
+                                  leading: const Icon(Icons.close),
+                                  title: const Text('Cancel'),
+                                  onTap: () => context.pop(),
+                                ),
+                              ],
+                            ),
+                          ));
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage:
+                      CachedNetworkImageProvider(_profile.avatarUrl),
+                ),
               ),
               title: Text(_profile.name),
               trailing: IconButton(
@@ -66,6 +99,11 @@ class _AccountPageState extends LoadingState<AccountPage> {
               leading: const Icon(Icons.lock_outline),
               title: const Text('Change password'),
               onTap: () => print('TODO')),
+          ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Change birthday'),
+              onTap: () => print('TODO')),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Sign Out'),
