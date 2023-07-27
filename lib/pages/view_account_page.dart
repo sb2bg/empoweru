@@ -1,4 +1,3 @@
-import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -21,18 +20,22 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
 
   @override
   Future<void> onInit() async {
-    await context.tryDatabaseAsync(() async {
-      final profile = await Profile.fromUuid(widget.userId);
+    final profile = await Profile.fromId(widget.userId);
 
-      setState(() {
-        _profile = profile;
-      });
+    setState(() {
+      _profile = profile;
     });
   }
 
   @override
   AppBar get loadedAppBar => AppBar(
         title: Text(_profile.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.report),
+            onPressed: () => print('TODO'),
+          )
+        ],
       );
 
   @override
