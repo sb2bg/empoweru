@@ -9,7 +9,7 @@ import 'chat_page.dart';
 class NewChatPage extends StatefulWidget {
   static const routeName = '/new-chat';
 
-  const NewChatPage({Key? key}) : super(key: key);
+  const NewChatPage({super.key});
 
   @override
   State<NewChatPage> createState() => _NewChatPageState();
@@ -28,24 +28,8 @@ class _NewChatPageState extends State<NewChatPage> {
 
   Future<void> _loadFriends() async {
     try {
-      final userId = supabase.auth.currentUser!.id;
-
-      final myFriends = await supabase
-          .from('friendships')
-          .select()
-          .eq('profile_id', userId)
-          .eq('status', true);
-
-      final asFriend = await supabase
-          .from('friendships')
-          .select()
-          .eq('friend_id', userId)
-          .eq('status', true);
-
-      final List<Profile> friends = await Future.wait([
-        ...myFriends.map((map) => Profile.fromUuid(map['friend_id'])),
-        ...asFriend.map((map) => Profile.fromUuid(map['profile_id']))
-      ]);
+      final me = await supabase.getCurrentUser();
+      final friends = await me.getFriends();
 
       setState(() {
         _friends.addAll(friends);
