@@ -1,19 +1,19 @@
 import 'dart:async';
 
-import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/utils/loading_state.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:age_sync/utils/message.dart';
 import 'package:age_sync/utils/profile.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart';
 
 class ChatPage extends StatefulWidget {
   static const routeName = '/chat';
 
-  const ChatPage({Key? key, required this.roomId}) : super(key: key);
+  const ChatPage({super.key, required this.roomId});
 
   final String roomId;
 
@@ -21,111 +21,86 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends LoadingState<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
   late final Profile _me;
-  var _loading = true;
+  late final Profile _other;
 
   @override
-  void initState() {
-    super.initState();
+  onInit() async {
+    _messagesStream = supabase
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .eq('room_id', widget.roomId)
+        .order('created_at')
+        .map((maps) => maps.map((map) => Message.fromMap(map: map)).toList());
 
-    try {
-      final myUserId = supabase.auth.currentUser!.id;
-
-      _messagesStream = supabase
-          .from('messages')
-          .stream(primaryKey: ['id'])
-          .eq('room_id', widget.roomId)
-          .order('created_at')
-          .map((maps) => maps
-              .map((map) => Message.fromMap(map: map, myUserId: myUserId))
-              .toList());
-
-      _loadProfile(myUserId);
-    } on PostgrestException catch (error) {
-      context.showErrorSnackBar(message: error.message);
-    } catch (_) {
-      context.showErrorSnackBar(message: unexpectedErrorMessage);
-    }
+    await _loadProfiles();
   }
 
-  Future<void> _loadProfile(String id) async {
-    try {
-      final map =
-          await supabase.from('profiles').select().eq('id', id).single();
-      final profile = Profile.fromMap(map);
+  _loadProfiles() async {
+    final map = await supabase
+        .from('room_participants')
+        .select('profile_id')
+        .eq('room_id', widget.roomId)
+        .neq('profile_id', supabase.userId)
+        .single();
 
-      setState(() {
-        _me = profile;
-      });
-    } on PostgrestException catch (error) {
-      context.showErrorSnackBar(message: error.message);
-    } catch (_) {
-      context.showErrorSnackBar(message: unexpectedErrorMessage);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    }
+    _other = await Profile.fromId(map['profile_id']);
+    _me = await supabase.getCurrentUser();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: const Text('Chat'),
-          leading: const BackButton(),
-          actions: [
-            IconButton(
-              onPressed: () => Navigator.of(context).pushNamed(
-                  ViewAccountPage.routeName,
-                  arguments: _me
-                      .id), // TODO: fix this, it's not _me for the other person
-              icon: const Icon(Icons.account_circle),
-            ),
-          ]),
-      body: _loading
-          ? preloader
-          : StreamBuilder(
-              stream: _messagesStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final messages = snapshot.data ?? [];
+  AppBar get loadingAppBar => AppBar(
+        title: const Text('Chat'),
+      );
 
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: messages.isEmpty
-                            ? const Center(
-                                child: Text('Say hello',
-                                    style: TextStyle(color: Colors.grey)),
-                              )
-                            : ListView.builder(
-                                reverse: true,
-                                itemCount: messages.length,
-                                itemBuilder: (context, index) {
-                                  final message = messages[index];
+  @override
+  AppBar get loadedAppBar => AppBar(title: const Text('Chat'), actions: [
+        IconButton(
+          onPressed: () {
+            context.pushNamed(ViewAccountPage.routeName, arguments: _other.id);
+          },
+          icon: const Icon(Icons.account_circle),
+        ),
+      ]);
 
-                                  return _ChatBubble(
-                                    message: message,
-                                    profile: message.isMine
-                                        ? _me
-                                        : _me, // TODO: fix this, it's not _me for the other person
-                                  );
-                                },
-                              ),
+  @override
+  Widget buildLoaded(BuildContext context) {
+    return StreamBuilder(
+      stream: _messagesStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final messages = snapshot.data ?? [];
+
+          return Column(
+            children: [
+              Expanded(
+                child: messages.isEmpty
+                    ? const Center(
+                        child: Text('Say hello',
+                            style: TextStyle(color: Colors.grey)),
+                      )
+                    : ListView.builder(
+                        reverse: true,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final message = messages[index];
+
+                          return _ChatBubble(
+                            message: message,
+                            profile: message.isMine ? _me : _other,
+                          );
+                        },
                       ),
-                      _MessageBar(roomId: widget.roomId),
-                    ],
-                  );
-                } else {
-                  return preloader;
-                }
-              },
-            ),
+              ),
+              _MessageBar(roomId: widget.roomId),
+            ],
+          );
+        } else {
+          return preloader;
+        }
+      },
     );
   }
 }
@@ -191,7 +166,6 @@ class _MessageBarState extends State<_MessageBar> {
 
   void _submitMessage() async {
     final text = _textController.text;
-    final myUserId = supabase.auth.currentUser!.id;
 
     if (text.isEmpty) {
       return;
@@ -199,37 +173,32 @@ class _MessageBarState extends State<_MessageBar> {
 
     _textController.clear();
 
-    try {
-      await supabase.from('messages').insert({
-        'profile_id': myUserId,
-        'content': text,
-        'room_id': widget.roomId,
-      });
-    } on PostgrestException catch (error) {
-      context.showErrorSnackBar(message: error.message);
-    } catch (_) {
-      context.showErrorSnackBar(message: unexpectedErrorMessage);
-    }
+    context.tryDatabaseAsync(() async {
+      await Message.create(supabase.userId, text, widget.roomId);
+    });
   }
 }
 
 class _ChatBubble extends StatelessWidget {
   const _ChatBubble({
-    Key? key,
     required this.message,
     required this.profile,
-  }) : super(key: key);
+  });
 
   final Message message;
-  final Profile? profile;
+  final Profile profile;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> chatContents = [
       if (!message.isMine)
-        CircleAvatar(
-          child:
-              profile == null ? preloader : Text(profile!.name.substring(0, 2)),
+        GestureDetector(
+          onTap: () => context.pushNamed(ViewAccountPage.routeName,
+              arguments: profile.id),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
+          ),
         ),
       const SizedBox(width: 12),
       Flexible(
@@ -239,27 +208,76 @@ class _ChatBubble extends StatelessWidget {
             horizontal: 12,
           ),
           decoration: BoxDecoration(
-            color: message.isMine
-                ? Theme.of(context).primaryColor
-                : Colors.grey[300],
+            color: message.isMine ? Colors.blue[600] : Colors.grey[900],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.content),
         ),
       ),
       const SizedBox(width: 12),
-      Text(format(message.createdAt, locale: 'en_short')),
+      Text(format(message.createdAt, locale: 'en_short'),
+          style: const TextStyle(color: Colors.grey)),
       const SizedBox(width: 60),
     ];
+
     if (message.isMine) {
       chatContents = chatContents.reversed.toList();
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 18),
-      child: Row(
-        mainAxisAlignment:
-            message.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: chatContents,
+
+    final myActions = [
+      ListTile(
+        leading: const Icon(Icons.delete),
+        title: const Text('Delete'),
+        onTap: () {
+          message.delete();
+          context.pop();
+        },
+      ),
+    ];
+
+    final otherActions = [
+      ListTile(
+        leading: const Icon(Icons.account_circle),
+        title: const Text('View profile'),
+        onTap: () {
+          context.pushNamed(ViewAccountPage.routeName, arguments: profile.id);
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.report),
+        title: const Text('Report Message'),
+        onTap: () {
+          print('TODO');
+          context.pop();
+          // thank you for reporting this message
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: const Text('Report Received'),
+                    content: const Text(
+                        'We will review this message and take appropriate action. Thank you for helping us keep AgeSync safe.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => context.pop(),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ));
+        },
+      ),
+    ];
+
+    return GestureDetector(
+      onLongPress: () {
+        context.showMenu(message.isMine ? myActions : otherActions);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 18),
+        child: Row(
+          mainAxisAlignment:
+              message.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+          children: chatContents,
+        ),
       ),
     );
   }
