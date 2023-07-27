@@ -12,6 +12,6 @@ Future<void> signUpWithEmail(
   await supabase.auth.signUp(
     email: email,
     password: password,
-    data: {'name': name, 'elder': elder},
+    data: {'full_name': name, 'elder': elder},
   );
 }
