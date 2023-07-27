@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool _loading = true;
+  bool _error = false;
 
   void setLoading(bool loading) {
     setState(() {
@@ -14,11 +15,28 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool get loading => _loading;
 
   @override
+  @nonVirtual
   void initState() {
     super.initState();
 
-    onInit().then((_) => setLoading(false));
+    final start = DateTime.now();
+
+    context.tryDatabaseAsync(
+        () => onInit().then((_) {
+              setLoading(false);
+              afterInit();
+              debugPrint(
+                  'Loaded ${toString()} in ${DateTime.now().difference(start).inMilliseconds}ms');
+            }), onError: (error) {
+      setState(() {
+        _error = true;
+      });
+
+      debugPrint(error.toString());
+    });
   }
+
+  void afterInit() {}
 
   Future<void> onInit();
   AppBar? get constAppBar => null;
@@ -30,7 +48,11 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: constAppBar ?? (_loading ? loadingAppBar : loadedAppBar),
-        body: _loading ? preloader : buildLoaded(context));
+        body: _error
+            ? error
+            : _loading
+                ? preloader
+                : buildLoaded(context));
   }
 
   Widget buildLoaded(BuildContext context);
