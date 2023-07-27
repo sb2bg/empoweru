@@ -1,8 +1,9 @@
 import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/utils/loading_state.dart';
+import 'package:age_sync/utils/room.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../utils/profile.dart';
 import 'chat_page.dart';
@@ -10,7 +11,7 @@ import 'chat_page.dart';
 class ViewMessagesPage extends StatefulWidget {
   static const routeName = '/messages';
 
-  const ViewMessagesPage({Key? key}) : super(key: key);
+  const ViewMessagesPage({super.key});
 
   static Route<void> route() {
     return MaterialPageRoute(
@@ -22,77 +23,54 @@ class ViewMessagesPage extends StatefulWidget {
   State<ViewMessagesPage> createState() => _ViewMessagesPageState();
 }
 
-class _ViewMessagesPageState extends State<ViewMessagesPage> {
-  late final Stream<List<Profile>> _roomStream;
+class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
+  late final List<RoomMeta> _rooms;
 
   @override
-  void initState() {
-    super.initState();
-    _loadRooms();
-  }
+  onInit() async {
+    final profile = await supabase.getCurrentUser();
+    final rooms = await profile.getRooms();
 
-  _loadRooms() async {
-    try {
-      final userId = supabase.auth.currentUser!.id;
-
-      _roomStream = supabase
-          .from('room_participants')
-          .stream(primaryKey: ['room_id'])
-          .eq('profile_id', userId)
-          .order('created_at')
-          .map((maps) =>
-              maps.map((map) => Profile.fromMap(map['profile_id'])).toList());
-    } on PostgrestException catch (error) {
-      context.showErrorSnackBar(message: error.message);
-    } catch (_) {
-      context.showErrorSnackBar(message: unexpectedErrorMessage);
-    }
+    setState(() {
+      _rooms = rooms;
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Messages'), actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => const NewChatPage(),
-            );
-          },
-        )
-      ]),
-      body: StreamBuilder(
-        stream: _roomStream,
-        builder: (context, snapshot) {
-          final profiles = snapshot.data ?? [];
+  AppBar? get constAppBar => AppBar(
+        title: const Text('Messages'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => const NewChatPage(),
+              );
+            },
+          )
+        ],
+      );
 
-          return profiles.isEmpty
-              ? const Center(
-                  child: Text('You have no messages.',
-                      style: TextStyle(color: Colors.grey)))
-              : ListView.separated(
-                  itemBuilder: (context, index) {
-                    final profile = profiles[index];
-                    return _MessageEntry(
-                      profile: profile,
-                      lastText:
-                          'Hey!!! I saw u were in town. Wanted to have coffee, are you down?????',
-                    );
-                  },
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemCount: profiles.length,
-                );
-        },
-      ),
+  @override
+  Widget buildLoaded(BuildContext context) {
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        final room = _rooms[index];
+        String? lastText = room.lastMessage?.content;
+
+        return _MessageEntry(
+            profile: room.other,
+            lastText: lastText ?? 'Click to chat with ${room.other.name}');
+      },
+      separatorBuilder: (context, index) => const Divider(),
+      itemCount: _rooms.length,
     );
   }
 }
 
 class _MessageEntry extends StatelessWidget {
-  const _MessageEntry({Key? key, required this.profile, required this.lastText})
-      : super(key: key);
+  const _MessageEntry({required this.profile, required this.lastText});
 
   final Profile profile;
   final String lastText;
@@ -111,36 +89,28 @@ class _MessageEntry extends StatelessWidget {
             style: const TextStyle(color: Colors.grey)),
       ),
       onTap: () {
-        Navigator.of(context).pushNamed(ChatPage.routeName, arguments: profile);
+        supabase.rpc('create_new_room', params: {
+          'other_user_id': profile.id,
+        }).then(
+            (value) => context.pushNamed(ChatPage.routeName, arguments: value));
       },
       onLongPress: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (context) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.delete),
-                  title: const Text('Delete'),
-                  onTap: () {
-                    print("TODO");
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.block),
-                  title: const Text('Block'),
-                  onTap: () {
-                    print("TODO");
-                  },
-                ),
-                const SizedBox(
-                  height: 16,
-                )
-              ],
-            );
-          },
-        );
+        context.showMenu([
+          ListTile(
+            leading: const Icon(Icons.delete),
+            title: const Text('Delete'),
+            onTap: () {
+              print("TODO");
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.block),
+            title: const Text('Block'),
+            onTap: () {
+              print("TODO");
+            },
+          )
+        ]);
       },
     );
   }
