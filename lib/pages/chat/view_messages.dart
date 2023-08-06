@@ -89,10 +89,7 @@ class _MessageEntry extends StatelessWidget {
             style: const TextStyle(color: Colors.grey)),
       ),
       onTap: () {
-        supabase.rpc('create_new_room', params: {
-          'other_user_id': profile.id,
-        }).then(
-            (value) => context.pushNamed(ChatPage.routeName, arguments: value));
+        context.pushNamed(ChatPage.routeName, arguments: profile.id);
       },
       onLongPress: () {
         context.showMenu([
