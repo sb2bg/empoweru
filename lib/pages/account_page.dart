@@ -1,3 +1,5 @@
+import 'package:age_sync/pages/friend_page.dart';
+import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +94,20 @@ class _AccountPageState extends LoadingState<AccountPage> {
               )),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.chat_bubble_outline),
+            title: const Text('Messages'),
+            onTap: () => context.pushNamed(ViewMessagesPage.routeName),
+          ),
+          ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Friends'),
+              onTap: () => context.pushNamed(FriendPage.routeName)),
+          ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Tasks'),
+              onTap: () => context.pushNamed(TaskPage.routeName)),
+          const Divider(),
+          ListTile(
               leading: const Icon(Icons.email_outlined),
               title: const Text('Change email'),
               onTap: () => print('TODO')),
@@ -100,7 +116,7 @@ class _AccountPageState extends LoadingState<AccountPage> {
               title: const Text('Change password'),
               onTap: () => print('TODO')),
           ListTile(
-              leading: const Icon(Icons.calendar_month),
+              leading: const Icon(Icons.cake),
               title: const Text('Change birthday'),
               onTap: () => print('TODO')),
           const Divider(),
@@ -115,8 +131,7 @@ class _AccountPageState extends LoadingState<AccountPage> {
               Icons.delete_outline,
             ),
             title: const Text('Delete account'),
-            onTap: () =>
-                Navigator.of(context).pushNamed(ViewMessagesPage.routeName),
+            onTap: () => print('TODO: Delete account and all associated data'),
           ),
         ],
       ),
