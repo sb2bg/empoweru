@@ -152,8 +152,8 @@ class _LogInPageState extends State<LogInPage> {
                               style: const TextStyle(fontSize: 16)),
                           TextButton(
                             onPressed: () {
-                              context.popOrPushNamed(
-                                  widget.type.alternate().routeName);
+                              context
+                                  .pushNamed(widget.type.alternate().routeName);
                             },
                             child: Text(
                               widget.type.alternate().title,
