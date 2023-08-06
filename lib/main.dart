@@ -4,8 +4,10 @@ import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
 import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
+import 'package:age_sync/pages/friend_page.dart';
 import 'package:age_sync/pages/log_in_page.dart';
 import 'package:age_sync/pages/splash.dart';
+import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/rendering.dart';
@@ -74,6 +76,7 @@ class MyApp extends StatelessWidget {
             fillColor: Colors.grey[900],
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           ),
+          dividerColor: Colors.grey[900],
           useMaterial3: true,
         ),
         initialRoute: '/',
@@ -85,14 +88,22 @@ class MyApp extends StatelessWidget {
             LogInPage.signUpRouteName: (_) =>
                 const LogInPage(type: LogInType.signUp),
             AccountPage.routeName: (_) => const AccountPage(),
-            ViewAccountPage.routeName: (_) =>
-                ViewAccountPage(userId: settings.arguments as String),
+            ViewAccountPage.routeName: (_) {
+              final userId = settings.arguments as String;
+              if (userId == supabase.userId) {
+                return const AccountPage();
+              }
+
+              return ViewAccountPage(userId: userId);
+            },
             ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
             ChatPage.routeName: (_) =>
-                ChatPage(roomId: settings.arguments as String),
+                ChatPage(otherId: settings.arguments as String),
             EmailLogInPage.routeName: (_) => const EmailLogInPage(),
             EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
             NewChatPage.routeName: (_) => const NewChatPage(),
+            TaskPage.routeName: (_) => const TaskPage(),
+            FriendPage.routeName: (_) => const FriendPage(),
           };
 
           WidgetBuilder builder = routes[settings.name]!;
