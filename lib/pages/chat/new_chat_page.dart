@@ -108,10 +108,7 @@ class FriendEntry extends StatelessWidget {
           trailing: IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              supabase.rpc('create_new_room', params: {
-                'other_user_id': profile.id,
-              }).then((value) =>
-                  context.pushNamed(ChatPage.routeName, arguments: value));
+              context.pushNamed(ChatPage.routeName, arguments: profile.id);
             },
           )),
     );
