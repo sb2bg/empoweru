@@ -95,8 +95,7 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
                 TextButton(
                     onPressed: _isLoading
                         ? null
-                        : () =>
-                            context.popOrPushNamed(EmailSignUpPage.routeName),
+                        : () => context.pushNamed(EmailSignUpPage.routeName),
                     child: const Text('Sign Up'))
               ],
             ),
