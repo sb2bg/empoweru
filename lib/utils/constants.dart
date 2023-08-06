@@ -25,6 +25,22 @@ const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
+showReportThankYouDialog(BuildContext context) {
+  showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: const Text('Report Received'),
+            content: const Text(
+                'We will review this message and take appropriate action. Thank you for helping us keep AgeSync safe.'),
+            actions: [
+              TextButton(
+                onPressed: () => context.pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ));
+}
+
 extension ShowSnackBar on BuildContext {
   void showSnackBar({
     required String message,
