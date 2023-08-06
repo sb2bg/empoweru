@@ -31,31 +31,45 @@ class Profile {
   Future<List<Profile>> getFriends() async {
     final userId = supabase.userId;
 
-    final myFriends = await supabase
+    final friends = await supabase
         .from('friendships')
         .select()
-        .eq('profile_id', userId)
+        .or('friend_id.eq.$userId,profile_id.eq.$userId')
         .eq('status', true);
 
-    final asFriend = await supabase
-        .from('friendships')
-        .select()
-        .eq('friend_id', userId)
-        .eq('status', true);
+    List<Profile> mappedFriends = [];
 
-    return await Future.wait([
-      ...myFriends.map((map) => Profile.fromId(map['friend_id'])),
-      ...asFriend.map((map) => Profile.fromId(map['profile_id']))
-    ]);
+    for (final friend in friends) {
+      final friendId = friend['friend_id'] as String;
+
+      if (friendId != userId) {
+        mappedFriends.add(await Profile.fromId(friendId));
+      } else {
+        mappedFriends.add(await Profile.fromId(friend['profile_id'] as String));
+      }
+    }
+
+    return mappedFriends;
   }
 
   Future<List<RoomMeta>> getRooms() async {
-    DateTime now = DateTime.now();
     final List<dynamic> rooms =
         await supabase.from('room_participants').select().eq('profile_id', id);
     final List<Room> roomsList =
         await Future.wait(rooms.map((map) => Room.fromId(map['room_id'])));
 
     return await Future.wait(roomsList.map((e) => RoomMeta.fromRoomId(e.id)));
+  }
+
+  Future<bool> isFriend(String otherId) async {
+    return await supabase
+            .from('friendships')
+            .select()
+            .eq('profile_id', id)
+            .eq('friend_id', id)
+            .eq('profile_id', otherId)
+            .eq('friend_id', otherId)
+            .eq('status', true) !=
+        0;
   }
 }
