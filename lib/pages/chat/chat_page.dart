@@ -13,9 +13,9 @@ import 'package:timeago/timeago.dart';
 class ChatPage extends StatefulWidget {
   static const routeName = '/chat';
 
-  const ChatPage({super.key, required this.roomId});
+  const ChatPage({super.key, required this.otherId});
 
-  final String roomId;
+  final String otherId;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -25,13 +25,18 @@ class _ChatPageState extends LoadingState<ChatPage> {
   late final Stream<List<Message>> _messagesStream;
   late final Profile _me;
   late final Profile _other;
+  late final String _roomId;
 
   @override
   onInit() async {
+    _roomId = await supabase.rpc('create_new_room', params: {
+      'other_user_id': widget.otherId,
+    });
+
     _messagesStream = supabase
         .from('messages')
         .stream(primaryKey: ['id'])
-        .eq('room_id', widget.roomId)
+        .eq('room_id', _roomId)
         .order('created_at')
         .map((maps) => maps.map((map) => Message.fromMap(map: map)).toList());
 
@@ -42,7 +47,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
     final map = await supabase
         .from('room_participants')
         .select('profile_id')
-        .eq('room_id', widget.roomId)
+        .eq('room_id', _roomId)
         .neq('profile_id', supabase.userId)
         .single();
 
@@ -94,7 +99,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
                         },
                       ),
               ),
-              _MessageBar(roomId: widget.roomId),
+              _MessageBar(roomId: _roomId),
             ],
           );
         } else {
@@ -249,20 +254,7 @@ class _ChatBubble extends StatelessWidget {
         onTap: () {
           print('TODO');
           context.pop();
-          // thank you for reporting this message
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                    title: const Text('Report Received'),
-                    content: const Text(
-                        'We will review this message and take appropriate action. Thank you for helping us keep AgeSync safe.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => context.pop(),
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ));
+          showReportThankYouDialog(context);
         },
       ),
     ];
