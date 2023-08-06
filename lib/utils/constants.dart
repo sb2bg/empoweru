@@ -19,6 +19,9 @@ const error = Scaffold(
             style: TextStyle(
               color: Colors.grey,
             ))));
+const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+const subtitleStyle = TextStyle(fontSize: 16);
+const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
