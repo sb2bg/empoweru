@@ -61,7 +61,18 @@ extension Navigate on BuildContext {
   NavigatorState get navigator => Navigator.of(this);
 
   void pushNamed(String routeName, {Object? arguments}) {
-    navigator.pushNamed(routeName, arguments: arguments);
+    Route? previousRoute = navObserver.previousRoute;
+
+    if (!navigator.canPop() || previousRoute == null) {
+      navigator.pushNamed(routeName, arguments: arguments);
+      return;
+    }
+
+    if (previousRoute.settings.name == routeName) {
+      pop();
+    } else {
+      navigator.pushNamed(routeName, arguments: arguments);
+    }
   }
 
   void pushReplacementNamed(String routeName) {
@@ -74,21 +85,6 @@ extension Navigate on BuildContext {
 
   void popAndPushNamed(String routeName) {
     navigator.popAndPushNamed(routeName);
-  }
-
-  void popOrPushNamed(String routeName) {
-    Route? previousRoute = navObserver.previousRoute;
-
-    if (!navigator.canPop() || previousRoute == null) {
-      pushNamed(routeName);
-      return;
-    }
-
-    if (previousRoute.settings.name == routeName) {
-      pop();
-    } else {
-      pushNamed(routeName);
-    }
   }
 }
 
