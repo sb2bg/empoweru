@@ -56,12 +56,10 @@ class _ChatPageState extends LoadingState<ChatPage> {
   }
 
   @override
-  AppBar get loadingAppBar => AppBar(
-        title: const Text('Chat'),
-      );
+  AppBar get loadingAppBar => AppBar();
 
   @override
-  AppBar get loadedAppBar => AppBar(title: const Text('Chat'), actions: [
+  AppBar get loadedAppBar => AppBar(title: Text(_other.name), actions: [
         IconButton(
           onPressed: () {
             context.pushNamed(ViewAccountPage.routeName, arguments: _other.id);
@@ -125,9 +123,15 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.grey[900],
-      child: SafeArea(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[800]!),
+        ),
+      ),
+      child: Material(
+        color: Colors.grey[900],
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
