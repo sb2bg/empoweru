@@ -14,54 +14,53 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends LoadingState<TaskPage> {
-  late final List<Task> _assignedTasks;
-  late final List<Task> _createdTasks;
+  late final List<Task> _tasks;
+  late final bool elder;
 
   @override
   AppBar get loadingAppBar => AppBar(
         title: const Text('Tasks'),
       );
 
-  AppBar get loadedAppBar => AppBar(
-        title: const Text('Tasks'),
+  @override
+  AppBar? get loadedAppBar => AppBar(
+        title: Text('Tasks (${_tasks.length})'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              context.showMenu([]);
-            },
-          ),
+          elder
+              ? IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.showMenu([]);
+                  },
+                )
+              : Container()
         ],
       );
 
   @override
   Future<void> onInit() async {
-    _assignedTasks = await Task.assignedFromProfileId(supabase.userId);
-    _createdTasks = await Task.createdFromProfileId(supabase.userId);
+    elder = (await supabase.getCurrentUser()).elder;
+
+    if (elder) {
+      _tasks = await Task.createdFromProfileId(supabase.userId);
+    } else {
+      _tasks = await Task.assignedFromProfileId(supabase.userId);
+    }
   }
 
   @override
   Widget buildLoaded(BuildContext context) {
     return Column(
-      children: [
-        ExpansionTile(
-          title: Text('Assigned Tasks (${_assignedTasks.length})'),
-          children:
-              _assignedTasks.map((task) => TaskEntry(task: task)).toList(),
-        ),
-        ExpansionTile(
-          title: Text('Created Tasks (${_createdTasks.length})'),
-          children: _createdTasks.map((task) => TaskEntry(task: task)).toList(),
-        ),
-      ],
-    );
+        children: _tasks.map((task) => TaskEntry(task: task)).toList()
+          ..sort((a, b) => a.task.completed ? 1 : -1));
   }
 }
 
 class TaskEntry extends StatefulWidget {
-  const TaskEntry({super.key, required this.task});
+  const TaskEntry({super.key, required this.task, this.ownerName});
 
   final Task task;
+  final String? ownerName;
 
   @override
   State<TaskEntry> createState() => _TaskEntryState();
@@ -71,8 +70,23 @@ class _TaskEntryState extends State<TaskEntry> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(widget.task.name),
-      subtitle: Text(widget.task.details),
+      title: Text(widget.task.name,
+          style: subtitleStyle.copyWith(
+            decoration:
+                widget.task.completed ? TextDecoration.lineThrough : null,
+            overflow: TextOverflow.ellipsis,
+          )),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'By ${widget.ownerName ?? 'me'}',
+            style: metaStyle,
+          ),
+          Text(widget.task.details,
+              style: metaStyle, overflow: TextOverflow.ellipsis),
+        ],
+      ),
       trailing: widget.task.completed
           ? const Icon(Icons.check)
           : const Icon(Icons.circle_outlined),
