@@ -3,6 +3,7 @@ import 'constants.dart';
 class Task {
   Task({
     required this.id,
+    required this.ownerId,
     required this.name,
     required this.details,
     required this.deadline,
@@ -10,6 +11,7 @@ class Task {
   });
 
   final String id;
+  final String ownerId;
   final String name;
   final String details;
   final DateTime deadline;
@@ -17,6 +19,7 @@ class Task {
 
   Task.fromMap(Map<String, dynamic> map)
       : id = map['id'] as String,
+        ownerId = map['owner_id'] as String,
         name = map['name'] as String,
         details = map['details'] as String,
         deadline = DateTime.parse(map['deadline'] as String),
