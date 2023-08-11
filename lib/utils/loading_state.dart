@@ -40,8 +40,9 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
 
   Future<void> onInit();
   AppBar? get constAppBar => null;
-  AppBar get loadingAppBar => AppBar();
-  AppBar get loadedAppBar => AppBar();
+  AppBar? get loadingAppBar => null;
+  AppBar? get loadedAppBar => null;
+  Widget? get header => null;
 
   @override
   @nonVirtual
@@ -50,9 +51,14 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
         appBar: constAppBar ?? (_loading ? loadingAppBar : loadedAppBar),
         body: _error
             ? error
-            : _loading
-                ? preloader
-                : buildLoaded(context));
+            : Column(
+                children: [
+                  if (header != null) header!,
+                  Expanded(
+                    child: _loading ? preloader : buildLoaded(context),
+                  ),
+                ],
+              ));
   }
 
   Widget buildLoaded(BuildContext context);
