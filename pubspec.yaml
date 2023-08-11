@@ -41,6 +41,7 @@ dependencies:
   timeago: ^3.5.0
   cached_network_image: ^3.2.3
   image_picker: ^1.0.1
+  persistent_bottom_nav_bar: ^5.0.2
 
 dev_dependencies:
   flutter_test:
