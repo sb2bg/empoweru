@@ -78,7 +78,8 @@ extension Navigate on BuildContext {
     if (previousRoute.settings.name == routeName) {
       pop();
     } else {
-      navigator.pushNamed(routeName, arguments: arguments);
+      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
+          screen: widget, settings: routeSettings);
     }
   }
 
