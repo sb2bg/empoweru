@@ -70,40 +70,43 @@ class _ChatPageState extends LoadingState<ChatPage> {
 
   @override
   Widget buildLoaded(BuildContext context) {
-    return StreamBuilder(
-      stream: _messagesStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final messages = snapshot.data ?? [];
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: StreamBuilder(
+        stream: _messagesStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final messages = snapshot.data ?? [];
 
-          return Column(
-            children: [
-              Expanded(
-                child: messages.isEmpty
-                    ? const Center(
-                        child: Text('Say hello',
-                            style: TextStyle(color: Colors.grey)),
-                      )
-                    : ListView.builder(
-                        reverse: true,
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final message = messages[index];
+            return Column(
+              children: [
+                Expanded(
+                  child: messages.isEmpty
+                      ? const Center(
+                          child: Text('Say hello',
+                              style: TextStyle(color: Colors.grey)),
+                        )
+                      : ListView.builder(
+                          reverse: true,
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final message = messages[index];
 
-                          return _ChatBubble(
-                            message: message,
-                            profile: message.isMine ? _me : _other,
-                          );
-                        },
-                      ),
-              ),
-              _MessageBar(roomId: _roomId),
-            ],
-          );
-        } else {
-          return preloader;
-        }
-      },
+                            return _ChatBubble(
+                              message: message,
+                              profile: message.isMine ? _me : _other,
+                            );
+                          },
+                        ),
+                ),
+                _MessageBar(roomId: _roomId),
+              ],
+            );
+          } else {
+            return preloader;
+          }
+        },
+      ),
     );
   }
 }
@@ -123,45 +126,40 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[800]!),
-        ),
-      ),
-      child: Material(
-        color: Colors.grey[900],
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  keyboardType: TextInputType.text,
-                  maxLines: null,
-                  autofocus: true,
-                  controller: _textController,
-                  decoration: const InputDecoration(
-                    hintText: 'Type a message',
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.all(8),
-                  ),
+    return Material(
+      color: Colors.grey[900],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                textInputAction: TextInputAction.send,
+                onFieldSubmitted: (_) => _submitMessage(),
+                onEditingComplete: () {},
+                keyboardType: TextInputType.text,
+                maxLines: null,
+                autofocus: true,
+                controller: _textController,
+                decoration: const InputDecoration(
+                  hintText: 'Type a message',
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8),
                 ),
               ),
-              TextButton(
-                onPressed: () => _submitMessage(),
-                child: const Row(
-                  children: [
-                    Text('Send', style: TextStyle(color: Colors.grey)),
-                    SizedBox(width: 6),
-                    Icon(Icons.send, color: Colors.grey),
-                  ],
-                ),
+            ),
+            TextButton(
+              onPressed: () => _submitMessage(),
+              child: const Row(
+                children: [
+                  Text('Send', style: TextStyle(color: Colors.grey)),
+                  SizedBox(width: 6),
+                  Icon(Icons.send, color: Colors.grey),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -256,7 +254,7 @@ class _ChatBubble extends StatelessWidget {
         leading: const Icon(Icons.report),
         title: const Text('Report Message'),
         onTap: () {
-          print('TODO');
+          print('Report message ${message.id}'); // TODO: Report message
           context.pop();
           showReportThankYouDialog(context);
         },
