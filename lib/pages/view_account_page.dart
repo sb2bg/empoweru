@@ -24,14 +24,12 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
 
   @override
   Future<void> onInit() async {
-    final profile = await Profile.fromId(widget.userId);
-    final friend = await profile.isFriend(profile.id);
-
-    setState(() {
-      _profile = profile;
-      _isFriend = friend;
-    });
+    _profile = await Profile.fromId(widget.userId);
+    _isFriend = await _profile.isFriend(_profile.id);
   }
+
+  @override
+  AppBar get loadingAppBar => AppBar();
 
   @override
   AppBar get loadedAppBar => AppBar(
@@ -57,6 +55,16 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
               backgroundImage: CachedNetworkImageProvider(_profile.avatarUrl),
               radius: 50,
             ),
+            const SizedBox(height: 16),
+            Text(
+              _profile.name,
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            const SizedBox(height: 16),
+            // Text(
+            //   _profile.bio,
+            //   style: Theme.of(context).textTheme.bodyText1,
+            // ),
             const Divider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
