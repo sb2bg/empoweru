@@ -94,20 +94,6 @@ class _AccountPageState extends LoadingState<AccountPage> {
               )),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.chat_bubble_outline),
-            title: const Text('Messages'),
-            onTap: () => context.pushNamed(ViewMessagesPage.routeName),
-          ),
-          ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Friends'),
-              onTap: () => context.pushNamed(FriendPage.routeName)),
-          ListTile(
-              leading: const Icon(Icons.calendar_month),
-              title: const Text('Tasks'),
-              onTap: () => context.pushNamed(TaskPage.routeName)),
-          const Divider(),
-          ListTile(
               leading: const Icon(Icons.email_outlined),
               title: const Text('Change email'),
               onTap: () => print('TODO')),
