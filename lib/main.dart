@@ -13,6 +13,7 @@ import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -81,21 +82,25 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     debugPaintSizeEnabled = false;
 
-    return MaterialApp(
-        title: 'Home',
-        debugShowCheckedModeBanner: false,
-        navigatorObservers: [navObserver],
-        themeMode: ThemeMode.dark,
-        darkTheme: themeData,
-        initialRoute: '/',
-        home: PersistentTabView(
-          context,
-          controller: _controller,
-          screens: generateScreens(),
-          items: generateNavBarItems(),
-          backgroundColor: Colors.grey[900]!,
-          navBarStyle: NavBarStyle.style3,
-        ));
+    return GlobalLoaderOverlay(
+        child: MaterialApp(
+      title: 'Home',
+      debugShowCheckedModeBanner: false,
+      navigatorObservers: [navObserver],
+      themeMode: ThemeMode.dark,
+      darkTheme: themeData,
+      initialRoute: '/',
+      home: supabase.auth.currentSession != null
+          ? PersistentTabView(
+              context,
+              controller: _controller,
+              screens: generateScreens(),
+              items: generateNavBarItems(),
+              backgroundColor: Colors.grey[900]!,
+              navBarStyle: NavBarStyle.style3,
+            )
+          : const LogInPage(type: LogInType.signIn),
+    ));
   }
 
   PersistentBottomNavBarItem _generateNavBarItem(
