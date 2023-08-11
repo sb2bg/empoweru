@@ -86,7 +86,7 @@ class _LogInPageState extends State<LogInPage> {
 
       if (session != null) {
         _redirecting = true;
-        Navigator.of(context).pushReplacementNamed(AccountPage.routeName);
+        context.pushReplacementNamed(AccountPage.routeName);
       }
     });
   }
@@ -136,7 +136,7 @@ class _LogInPageState extends State<LogInPage> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.black),
-                        onPressed: () => Navigator.of(context).pushNamed(
+                        onPressed: () => context.pushNamed(
                             widget.type == LogInType.signUp
                                 ? EmailSignUpPage.routeName
                                 : EmailLogInPage.routeName),
