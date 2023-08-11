@@ -109,7 +109,12 @@ class _AccountPageState extends LoadingState<AccountPage> {
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Sign Out'),
-            onTap: _signOut,
+            onTap: () {
+              context.showConfirmationDialog(
+                  title: 'Sign Out',
+                  message: 'Are you sure you want to sign out?',
+                  onConfirm: _signOut);
+            },
           ),
           const Divider(),
           ListTile(
