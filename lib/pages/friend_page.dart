@@ -1,10 +1,10 @@
 import 'package:age_sync/pages/view_account_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
 import '../utils/loading_state.dart';
 import '../utils/profile.dart';
-import 'chat/chat_page.dart';
 
 class FriendPage extends StatefulWidget {
   static const routeName = '/friends';
@@ -51,7 +51,7 @@ class _FriendPageState extends LoadingState<FriendPage> {
 
           return ListTile(
             leading: CircleAvatar(
-              backgroundImage: NetworkImage(friend.avatarUrl),
+              backgroundImage: CachedNetworkImageProvider(friend.avatarUrl),
             ),
             title: Text(friend.name),
             onTap: () {
