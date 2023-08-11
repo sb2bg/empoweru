@@ -128,8 +128,8 @@ extension DatabaseQuery on BuildContext {
   }
 }
 
-extension ShowModalBottomSheet on BuildContext {
-  void showMenu(List<ListTile> tiles) {
+extension Show on BuildContext {
+  showMenu(List<ListTile> tiles) {
     showModalBottomSheet(
       context: this,
       builder: (context) => SafeArea(
@@ -137,6 +137,39 @@ extension ShowModalBottomSheet on BuildContext {
           mainAxisSize: MainAxisSize.min,
           children: tiles,
         ),
+      ),
+    );
+  }
+
+  showConfirmationDialog(
+      {String? title,
+      String? message,
+      String? cancelText,
+      String? confirmText,
+      Function()? onCancel,
+      Function()? onConfirm}) {
+    showDialog(
+      context: this,
+      builder: (context) => AlertDialog(
+        title: title != null ? Text(title) : null,
+        content: message != null ? Text(message) : null,
+        contentPadding: const EdgeInsets.fromLTRB(24, 18, 24, 20),
+        actions: [
+          TextButton(
+            onPressed: () {
+              onCancel?.call();
+              context.pop();
+            },
+            child: Text(cancelText ?? 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              onConfirm?.call();
+              context.pop();
+            },
+            child: Text(confirmText ?? 'Confirm'),
+          ),
+        ],
       ),
     );
   }
