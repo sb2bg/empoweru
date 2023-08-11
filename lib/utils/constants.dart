@@ -1,7 +1,9 @@
 import 'package:age_sync/utils/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../main.dart';
 import 'observer.dart';
 
 const supabaseUrl = 'https://xtxynmkzjewotpmxxxvy.supabase.co';
@@ -62,9 +64,14 @@ extension Navigate on BuildContext {
 
   void pushNamed(String routeName, {Object? arguments}) {
     Route? previousRoute = navObserver.previousRoute;
+    RouteSettings routeSettings = RouteSettings(arguments: arguments);
+
+    WidgetBuilder builder = getRoute(routeName, routeSettings);
+    Widget widget = builder(this);
 
     if (!navigator.canPop() || previousRoute == null) {
-      navigator.pushNamed(routeName, arguments: arguments);
+      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
+          screen: widget, settings: routeSettings);
       return;
     }
 
@@ -158,6 +165,11 @@ extension CurrentUser on SupabaseClient {
     return cachedProfile!;
   }
 
+  invalidateCache() {
+    cachedProfile = null;
+    lastProfileFetch = null;
+  }
+
   String get userId {
     final currentUser = supabase.auth.currentUser;
 
@@ -168,3 +180,48 @@ extension CurrentUser on SupabaseClient {
     return currentUser.id;
   }
 }
+
+final themeData = ThemeData(
+  colorScheme: const ColorScheme.dark(),
+  appBarTheme: AppBarTheme(
+    backgroundColor: Colors.grey[900],
+    foregroundColor: Colors.white,
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+  ),
+  snackBarTheme: const SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12))),
+  ),
+  dividerTheme: DividerThemeData(
+    color: Colors.grey[900],
+  ),
+  listTileTheme: ListTileThemeData(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide.none,
+    ),
+    prefixIconColor: Colors.grey[600],
+    suffixIconColor: Colors.grey[600],
+    hintStyle: TextStyle(color: Colors.grey[600]),
+    filled: true,
+    fillColor: Colors.grey[900],
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+  ),
+  dividerColor: Colors.grey[900],
+  useMaterial3: true,
+);
