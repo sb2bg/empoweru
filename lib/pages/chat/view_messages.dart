@@ -1,9 +1,11 @@
 import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
+import 'package:age_sync/utils/message.dart';
 import 'package:age_sync/utils/room.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart';
 
 import '../../utils/profile.dart';
 import 'chat_page.dart';
@@ -57,11 +59,8 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
     return ListView.separated(
       itemBuilder: (context, index) {
         final room = _rooms[index];
-        String? lastText = room.lastMessage?.content;
 
-        return _MessageEntry(
-            profile: room.other,
-            lastText: lastText ?? 'Click to chat with ${room.other.name}');
+        return _MessageEntry(profile: room.other, lastText: room.lastMessage);
       },
       separatorBuilder: (context, index) => const Divider(),
       itemCount: _rooms.length,
@@ -73,7 +72,7 @@ class _MessageEntry extends StatelessWidget {
   const _MessageEntry({required this.profile, required this.lastText});
 
   final Profile profile;
-  final String lastText;
+  final Message? lastText;
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +82,21 @@ class _MessageEntry extends StatelessWidget {
           backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
         ),
         title: Text(profile.name),
-        subtitle: Text(lastText,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.grey)),
+        subtitle: Row(
+          children: [
+            Text(lastText?.content ?? 'Click to chat with ${profile.name}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.grey)),
+            const Spacer(),
+            Text(
+              lastText != null
+                  ? format(lastText!.createdAt, locale: 'en_short')
+                  : '',
+              style: const TextStyle(color: Colors.grey),
+            )
+          ],
+        ),
       ),
       onTap: () {
         context.pushNamed(ChatPage.routeName, arguments: profile.id);
