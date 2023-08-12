@@ -12,8 +12,6 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
     });
   }
 
-  bool get loading => _loading;
-
   @override
   @nonVirtual
   void initState() {

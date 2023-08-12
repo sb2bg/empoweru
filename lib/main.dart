@@ -56,12 +56,6 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
       (_) => const ErrorPage(error: 'Route not found');
 }
 
-MaterialPageRoute routeGenerator(RouteSettings settings) {
-  WidgetBuilder builder = getRoute(settings.name!, settings);
-
-  return MaterialPageRoute(builder: (ctx) => builder(ctx), settings: settings);
-}
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
