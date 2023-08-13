@@ -1,4 +1,5 @@
 import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
 import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
@@ -52,6 +53,7 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         NewChatPage.routeName: (_) => const NewChatPage(),
         TaskPage.routeName: (_) => const TaskPage(),
         FriendPage.routeName: (_) => const FriendPage(),
+        CalendarPage.routeName: (_) => const CalendarPage(),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
@@ -112,6 +114,7 @@ class _MyAppState extends State<MyApp> {
       _generateNavBarItem(title: 'Messages', icon: Icons.message),
       _generateNavBarItem(title: 'Friends', icon: Icons.people),
       _generateNavBarItem(title: 'Tasks', icon: Icons.task),
+      _generateNavBarItem(title: 'Events', icon: Icons.calendar_today),
       _generateNavBarItem(title: 'Account', icon: Icons.account_circle),
       // _generateNavBarItem(title: 'DEBUG SIGN IN', icon: Icons.account_circle)
     ];
@@ -122,6 +125,7 @@ class _MyAppState extends State<MyApp> {
       const ViewMessagesPage(),
       const FriendPage(),
       const TaskPage(),
+      const CalendarPage(),
       const AccountPage(),
       // const LogInPage(type: LogInType.signIn),
     ];
