@@ -1,3 +1,5 @@
+import 'package:age_sync/utils/profile.dart';
+
 import 'constants.dart';
 
 class Task {
@@ -30,20 +32,13 @@ class Task {
         await supabase.from('tasks').select().eq('id', uuid).single());
   }
 
-  static Future<List<Task>> assignedFromProfileId(String uuid) async {
+  static Future<List<Task>> getTasks(Profile user) async {
     final List<dynamic> tasks =
-        await supabase.from('task_assignees').select().eq('assignee_id', uuid);
+        await supabase.from(user.elder ? 'tasks' : 'task_assignees').select();
 
-    return await Future.wait(
-        tasks.map((map) => Task.fromId(map['task_id'] as String)));
-  }
-
-  static Future<List<Task>> createdFromProfileId(String uuid) async {
-    final List<dynamic> tasks =
-        await supabase.from('tasks').select().eq('owner_id', uuid);
-
-    return await Future.wait(
-        tasks.map((map) => Task.fromId(map['id'] as String)));
+    return await Future.wait(tasks.map((map) => Task.fromId(map[
+            user.elder ? 'id' : 'task_id']
+        as String))); // id vs task_id because tasks uses id, task_assignees uses task_id
   }
 
   toggleCompleted() async {

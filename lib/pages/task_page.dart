@@ -15,7 +15,7 @@ class TaskPage extends StatefulWidget {
 
 class _TaskPageState extends LoadingState<TaskPage> {
   late final List<Task> _tasks;
-  late final bool elder;
+  late final bool _elder;
 
   @override
   AppBar get loadingAppBar => AppBar(
@@ -26,7 +26,7 @@ class _TaskPageState extends LoadingState<TaskPage> {
   AppBar? get loadedAppBar => AppBar(
         title: Text('Tasks (${_tasks.length})'),
         actions: [
-          elder
+          _elder
               ? IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () {
@@ -39,13 +39,8 @@ class _TaskPageState extends LoadingState<TaskPage> {
 
   @override
   Future<void> onInit() async {
-    elder = (await supabase.getCurrentUser()).elder;
-
-    if (elder) {
-      _tasks = await Task.createdFromProfileId(supabase.userId);
-    } else {
-      _tasks = await Task.assignedFromProfileId(supabase.userId);
-    }
+    _elder = (await supabase.getCurrentUser()).elder;
+    _tasks = await Task.getTasks(await supabase.getCurrentUser());
   }
 
   @override
