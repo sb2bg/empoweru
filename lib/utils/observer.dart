@@ -27,7 +27,17 @@ class CustomRouteObserver extends NavigatorObserver {
     }
   }
 
+  void push(CustomRoute route) {
+    routeStack.add(route);
+  }
+
   Route? get currentRoute => routeStack.isNotEmpty ? routeStack.last : null;
   Route? get previousRoute =>
       routeStack.length > 1 ? routeStack[routeStack.length - 2] : null;
+}
+
+class CustomRoute extends Route {
+  String path;
+
+  CustomRoute({required this.path});
 }
