@@ -6,7 +6,7 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool _loading = true;
   bool _error = false;
 
-  void setLoading(bool loading) {
+  setLoading(bool loading) {
     setState(() {
       _loading = loading;
     });
@@ -14,7 +14,7 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
 
   @override
   @nonVirtual
-  void initState() {
+  initState() {
     super.initState();
 
     final start = DateTime.now();
@@ -25,27 +25,29 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
               afterInit();
               debugPrint(
                   'Loaded ${toString()} in ${DateTime.now().difference(start).inMilliseconds}ms');
-            }), onError: (error) {
+            }), onError: (error, stackTrace) {
       setState(() {
         _error = true;
       });
 
       debugPrint(error.toString());
+      debugPrint(stackTrace.toString());
     });
   }
 
-  void afterInit() {}
+  afterInit() {}
 
   Future<void> onInit();
   AppBar? get constAppBar => null;
   AppBar? get loadingAppBar => null;
   AppBar? get loadedAppBar => null;
   Widget? get header => null;
+  bool get disableRefresh => false;
 
   @override
   @nonVirtual
   Widget build(BuildContext context) {
-    return Scaffold(
+    final scaffold = Scaffold(
         appBar: constAppBar ?? (_loading ? loadingAppBar : loadedAppBar),
         body: _error
             ? error
@@ -57,6 +59,17 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
                   ),
                 ],
               ));
+
+    return disableRefresh
+        ? scaffold
+        : RefreshIndicator(
+            onRefresh: () async {
+              await onInit();
+            },
+            edgeOffset: MediaQuery.of(context).padding.top,
+            child: Stack(
+                children: [ListView(), scaffold]), // TODO: fix, doesn't work
+          );
   }
 
   Widget buildLoaded(BuildContext context);
