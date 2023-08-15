@@ -9,6 +9,7 @@ class Task {
     required this.name,
     required this.details,
     required this.deadline,
+    required this.createdAt,
     required this.completed,
   });
 
@@ -17,6 +18,7 @@ class Task {
   final String name;
   final String details;
   final DateTime deadline;
+  final DateTime createdAt;
   bool completed;
 
   Task.fromMap(Map<String, dynamic> map)
@@ -25,6 +27,7 @@ class Task {
         name = map['name'] as String,
         details = map['details'] as String,
         deadline = DateTime.parse(map['deadline'] as String),
+        createdAt = DateTime.parse(map['created_at'] as String),
         completed = map['completed'] as bool;
 
   static Future<Task> fromId(String uuid) async {
