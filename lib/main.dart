@@ -8,7 +8,6 @@ import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/error_page.dart';
 import 'package:age_sync/pages/friend_page.dart';
 import 'package:age_sync/pages/log_in_page.dart';
-import 'package:age_sync/pages/splash.dart';
 import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
@@ -30,7 +29,6 @@ Future<void> main() async {
 
 WidgetBuilder getRoute(String routeName, RouteSettings settings) {
   return <String, WidgetBuilder>{
-        SplashPage.routeName: (_) => const SplashPage(),
         LogInPage.logInRouteName: (_) =>
             const LogInPage(type: LogInType.signIn),
         LogInPage.signUpRouteName: (_) =>
@@ -66,12 +64,22 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final PersistentTabController _controller;
+  final PersistentTabController _controller =
+      PersistentTabController(initialIndex: 0);
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    _controller = PersistentTabController(initialIndex: 0);
+
+    supabase.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+
+      if (event == AuthChangeEvent.signedOut) {
+        supabase.invalidateCache();
+      }
+
+      setState(() {});
+    });
   }
 
   @override
@@ -116,7 +124,6 @@ class _MyAppState extends State<MyApp> {
       _generateNavBarItem(title: 'Tasks', icon: Icons.task),
       _generateNavBarItem(title: 'Events', icon: Icons.calendar_today),
       _generateNavBarItem(title: 'Account', icon: Icons.account_circle),
-      // _generateNavBarItem(title: 'DEBUG SIGN IN', icon: Icons.account_circle)
     ];
   }
 
@@ -127,7 +134,6 @@ class _MyAppState extends State<MyApp> {
       const TaskPage(),
       const CalendarPage(),
       const AccountPage(),
-      // const LogInPage(type: LogInType.signIn),
     ];
   }
 }
