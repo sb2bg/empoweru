@@ -28,6 +28,9 @@ class _ChatPageState extends LoadingState<ChatPage> {
   late final String _roomId;
 
   @override
+  bool get disableRefresh => true;
+
+  @override
   onInit() async {
     _roomId = await supabase.rpc('create_new_room', params: {
       'other_user_id': widget.otherId,
@@ -126,42 +129,49 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.grey[900],
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                textInputAction: TextInputAction.send,
-                onFieldSubmitted: (_) => _submitMessage(),
-                onEditingComplete: () {},
-                keyboardType: TextInputType.text,
-                maxLines: null,
-                autofocus: true,
-                controller: _textController,
-                decoration: const InputDecoration(
-                  hintText: 'Type a message',
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.all(8),
+    return Column(
+      children: [
+        Material(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(15))),
+          color: Colors.grey[900],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    textInputAction: TextInputAction.send,
+                    onFieldSubmitted: (_) => _submitMessage(),
+                    onEditingComplete: () {},
+                    keyboardType: TextInputType.text,
+                    maxLines: null,
+                    autofocus: true,
+                    controller: _textController,
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message',
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.all(8),
+                    ),
+                  ),
                 ),
-              ),
+                TextButton(
+                  onPressed: () => _submitMessage(),
+                  child: const Row(
+                    children: [
+                      Text('Send', style: TextStyle(color: Colors.grey)),
+                      SizedBox(width: 6),
+                      Icon(Icons.send, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => _submitMessage(),
-              child: const Row(
-                children: [
-                  Text('Send', style: TextStyle(color: Colors.grey)),
-                  SizedBox(width: 6),
-                  Icon(Icons.send, color: Colors.grey),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 

@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/profile.dart';
-import 'account_page.dart';
 import 'chat/chat_page.dart';
 
 class ViewAccountPage extends StatefulWidget {
@@ -19,13 +18,18 @@ class ViewAccountPage extends StatefulWidget {
 }
 
 class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
-  late final Profile _profile;
-  late final bool _isFriend;
+  late Profile _profile;
+  late bool _isFriend;
 
   @override
   Future<void> onInit() async {
-    _profile = await Profile.fromId(widget.userId);
-    _isFriend = await _profile.isFriend(_profile.id);
+    final profile = await Profile.fromId(widget.userId);
+    final isFriend = await profile.isFriend(profile.id);
+
+    setState(() {
+      _profile = profile;
+      _isFriend = isFriend;
+    });
   }
 
   @override

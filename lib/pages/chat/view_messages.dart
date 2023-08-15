@@ -26,7 +26,7 @@ class ViewMessagesPage extends StatefulWidget {
 }
 
 class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
-  late final List<RoomMeta> _rooms;
+  late List<RoomMeta> _rooms;
 
   @override
   onInit() async {
