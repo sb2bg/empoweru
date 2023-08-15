@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../supabase/auth/facebook.dart';
 import '../supabase/auth/google.dart';
 import '../utils/constants.dart';
-import 'account_page.dart';
 import 'email_log_in_page.dart';
 import 'email_sign_up_page.dart';
 
@@ -38,10 +35,7 @@ class LogInPage extends StatefulWidget {
 
 class _LogInPageState extends State<LogInPage> {
   bool _isLoading = false;
-  bool _redirecting = false;
   late final String _title;
-
-  late final StreamSubscription<AuthState> _authStateSubscription;
 
   _signIn(Function() signInMethod) async {
     setState(() {
@@ -79,22 +73,6 @@ class _LogInPageState extends State<LogInPage> {
     super.initState();
 
     _title = widget.type.title;
-
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
-      if (_redirecting) return;
-      final session = data.session;
-
-      if (session != null) {
-        _redirecting = true;
-        context.pushReplacementNamed(AccountPage.routeName);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _authStateSubscription.cancel();
-    super.dispose();
   }
 
   @override
