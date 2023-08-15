@@ -1,13 +1,9 @@
-import 'package:age_sync/pages/friend_page.dart';
-import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
 import '../utils/profile.dart';
-import 'chat/view_messages.dart';
-import 'log_in_page.dart';
 
 class AccountPage extends StatefulWidget {
   static const routeName = '/account';
@@ -19,7 +15,7 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends LoadingState<AccountPage> {
-  late final Profile _profile;
+  late Profile _profile;
 
   @override
   onInit() async {
@@ -31,8 +27,7 @@ class _AccountPageState extends LoadingState<AccountPage> {
   }
 
   _signOut() {
-    supabase.auth.signOut().then(
-        (value) => {context.pushReplacementNamed(LogInPage.logInRouteName)});
+    supabase.auth.signOut();
   }
 
   @override
