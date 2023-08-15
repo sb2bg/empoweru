@@ -16,16 +16,12 @@ class FriendPage extends StatefulWidget {
 }
 
 class _FriendPageState extends LoadingState<FriendPage> {
-  late final List<Profile> _friends;
+  late List<Profile> _friends;
 
   @override
   onInit() async {
     final profile = await supabase.getCurrentUser();
-    final friends = await profile.getFriends();
-
-    setState(() {
-      _friends = friends;
-    });
+    _friends = await profile.getFriends();
   }
 
   @override
@@ -44,25 +40,29 @@ class _FriendPageState extends LoadingState<FriendPage> {
   @override
   Widget buildLoaded(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: ListView.separated(
-        itemBuilder: (context, index) {
-          final friend = _friends[index];
+        padding: const EdgeInsets.only(top: 8.0),
+        child: _friends.isEmpty
+            ? const Center(
+                child: Text('You have no friends yet.'),
+              )
+            : ListView.separated(
+                itemBuilder: (context, index) {
+                  final friend = _friends[index];
 
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: CachedNetworkImageProvider(friend.avatarUrl),
-            ),
-            title: Text(friend.name),
-            onTap: () {
-              context.pushNamed(ViewAccountPage.routeName,
-                  arguments: friend.id);
-            },
-          );
-        },
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: _friends.length,
-      ),
-    );
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage:
+                          CachedNetworkImageProvider(friend.avatarUrl),
+                    ),
+                    title: Text(friend.name),
+                    onTap: () {
+                      context.pushNamed(ViewAccountPage.routeName,
+                          arguments: friend.id);
+                    },
+                  );
+                },
+                separatorBuilder: (context, index) => const Divider(),
+                itemCount: _friends.length,
+              ));
   }
 }
