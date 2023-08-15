@@ -24,6 +24,7 @@ const error = Scaffold(
 const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 const subtitleStyle = TextStyle(fontSize: 16);
 const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
+const whiteMetaStyle = TextStyle(fontSize: 12, color: Colors.white);
 
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
@@ -72,6 +73,7 @@ extension Navigate on BuildContext {
     if (!navigator.canPop() || previousRoute == null) {
       PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
           screen: widget, settings: routeSettings);
+
       return;
     }
 
@@ -113,15 +115,15 @@ extension DatabaseQuery on BuildContext {
   }
 
   Future<void> tryDatabaseAsync(Future<void> Function() func,
-      {Function(Object)? onError, Function()? onDone}) async {
+      {Function(Object, StackTrace)? onError, Function()? onDone}) async {
     try {
       await func();
-    } on PostgrestException catch (error) {
+    } on PostgrestException catch (error, stackTrace) {
       showErrorSnackBar(message: error.message);
-      onError?.call(error);
-    } catch (error) {
+      onError?.call(error, stackTrace);
+    } catch (error, stackTrace) {
       showErrorSnackBar(message: unexpectedErrorMessage);
-      onError?.call(error);
+      onError?.call(error, stackTrace);
     } finally {
       onDone?.call();
     }
