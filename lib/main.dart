@@ -1,7 +1,6 @@
 import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
-import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
 import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
@@ -48,7 +47,6 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
             ChatPage(otherId: settings.arguments as String),
         EmailLogInPage.routeName: (_) => const EmailLogInPage(),
         EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
-        NewChatPage.routeName: (_) => const NewChatPage(),
         TaskPage.routeName: (_) => const TaskPage(),
         FriendPage.routeName: (_) => const FriendPage(),
         CalendarPage.routeName: (_) => const CalendarPage(),
