@@ -63,17 +63,19 @@ extension ShowSnackBar on BuildContext {
 extension Navigate on BuildContext {
   NavigatorState get navigator => Navigator.of(this);
 
-  void pushNamed(String routeName, {Object? arguments}) {
+  void pushNamed(String routeName,
+      {Object? arguments, bool withNavBar = false}) {
     Route? previousRoute = navObserver.previousRoute;
-    RouteSettings routeSettings = RouteSettings(arguments: arguments);
+    RouteSettings routeSettings =
+        RouteSettings(arguments: arguments, name: routeName);
 
     WidgetBuilder builder = getRoute(routeName, routeSettings);
     Widget widget = builder(this);
 
     if (!navigator.canPop() || previousRoute == null) {
       PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
-          screen: widget, settings: routeSettings);
-
+          screen: widget, settings: routeSettings, withNavBar: withNavBar);
+      navObserver.push(CustomRoute(settings: routeSettings));
       return;
     }
 
@@ -81,20 +83,13 @@ extension Navigate on BuildContext {
       pop();
     } else {
       PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
-          screen: widget, settings: routeSettings);
+          screen: widget, settings: routeSettings, withNavBar: withNavBar);
+      navObserver.push(CustomRoute(settings: routeSettings));
     }
-  }
-
-  void pushReplacementNamed(String routeName) {
-    navigator.pushReplacementNamed(routeName);
   }
 
   void pop() {
     navigator.pop();
-  }
-
-  void popAndPushNamed(String routeName) {
-    navigator.popAndPushNamed(routeName);
   }
 }
 

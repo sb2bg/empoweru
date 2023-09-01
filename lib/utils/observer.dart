@@ -8,6 +8,10 @@ class CustomRouteObserver extends NavigatorObserver {
     routeStack.add(route);
   }
 
+  void pop() {
+    routeStack.removeLast();
+  }
+
   @override
   void didPop(Route route, Route? previousRoute) {
     routeStack.removeLast();
@@ -37,7 +41,5 @@ class CustomRouteObserver extends NavigatorObserver {
 }
 
 class CustomRoute extends Route {
-  String path;
-
-  CustomRoute({required this.path});
+  CustomRoute({required super.settings});
 }
