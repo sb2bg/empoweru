@@ -49,4 +49,12 @@ class RoomMeta {
 
     return RoomMeta(room: room, lastMessage: lastMessage, other: other);
   }
+
+  bool unread() {
+    if (lastMessage == null) {
+      return true;
+    }
+
+    return !lastMessage!.read && !lastMessage!.isMine;
+  }
 }
