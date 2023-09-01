@@ -7,8 +7,6 @@ import '../../utils/profile.dart';
 import 'chat_page.dart';
 
 class NewChatPage extends StatefulWidget {
-  static const routeName = '/new-chat';
-
   const NewChatPage({super.key});
 
   @override
