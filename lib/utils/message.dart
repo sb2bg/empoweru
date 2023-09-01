@@ -5,6 +5,7 @@ class Message {
     required this.id,
     required this.profileId,
     required this.content,
+    required this.read,
     required this.createdAt,
     required this.isMine,
   });
@@ -12,6 +13,7 @@ class Message {
   final String id;
   final String profileId;
   final String content;
+  final bool read;
   final DateTime createdAt;
   final bool isMine;
 
@@ -20,6 +22,7 @@ class Message {
   })  : id = map['id'],
         profileId = map['profile_id'],
         content = map['content'],
+        read = map['read'],
         createdAt = DateTime.parse(map['created_at']),
         isMine = supabase.userId == map['profile_id'];
 
@@ -42,6 +45,15 @@ class Message {
 
   delete() async {
     await supabase.from('messages').delete().eq('id', id);
+  }
+
+  // TODO: RLS does not allow this yet
+  markRead() async {
+    await supabase.from('messages').update({'read': true}).eq('id', id);
+  }
+
+  markUnread() async {
+    await supabase.from('messages').update({'read': false}).eq('id', id);
   }
 
   static create(String user, String contents, String roomId) async {
