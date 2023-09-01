@@ -81,7 +81,20 @@ class _MessageEntry extends StatelessWidget {
         leading: CircleAvatar(
           backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
         ),
-        title: Text(profile.name),
+        title: Row(
+          children: [
+            lastText?.read ?? true
+                ? const SizedBox()
+                : const Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: CircleAvatar(
+                      radius: 4,
+                      backgroundColor: Colors.blue,
+                    ),
+                  ),
+            Text(profile.name),
+          ],
+        ),
         subtitle: Row(
           children: [
             Text(lastText?.content ?? 'Click to chat with ${profile.name}',
