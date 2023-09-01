@@ -4,6 +4,7 @@ import 'package:age_sync/widgets/task_view.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
+import 'new_task_page.dart';
 
 class TaskPage extends StatefulWidget {
   const TaskPage({super.key});
@@ -38,14 +39,13 @@ class _TaskPageState extends LoadingState<TaskPage> {
   get loadedAppBar => AppBar(
         title: Text('Tasks (${_tasks.length})'),
         actions: [
-          _elder
-              ? IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.showMenu([]);
-                  },
-                )
-              : Container()
+          if (_elder)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                context.pushNamed(NewTaskPage.routeName, arguments: _tasks);
+              },
+            )
         ],
       );
 
