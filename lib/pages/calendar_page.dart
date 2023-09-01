@@ -30,11 +30,6 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
 
   @override
   Future<void> onInit() async {
-    setState(() {
-      _focusedDay = DateTime.now();
-      _selectedTasks = [];
-    });
-
     final List<Task> tasks =
         await Task.getTasks(await supabase.getCurrentUser());
 
@@ -53,6 +48,11 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
         },
       ),
     );
+
+    setState(() {
+      _focusedDay = DateTime.now();
+      _selectedTasks = _events[_focusedDay] ?? [];
+    });
   }
 
   @override
