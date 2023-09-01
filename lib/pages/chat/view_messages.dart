@@ -87,12 +87,14 @@ class _MessageEntry extends StatelessWidget {
             Text(lastText?.content ?? 'Click to chat with ${profile.name}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.grey)),
+                style: TextStyle(
+                    color:
+                        lastText?.read ?? true ? Colors.grey : Colors.white)),
             const Spacer(),
             Text(
               lastText != null
                   ? format(lastText!.createdAt, locale: 'en_short')
-                  : '',
+                  : 'TODO', // FIXME
               style: const TextStyle(color: Colors.grey),
             )
           ],
