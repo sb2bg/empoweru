@@ -7,14 +7,17 @@ import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/error_page.dart';
 import 'package:age_sync/pages/friend_page.dart';
 import 'package:age_sync/pages/log_in_page.dart';
+import 'package:age_sync/pages/new_task_page.dart';
 import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/utils/task.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:badges/badges.dart' as badges;
 
 Future<void> main() async {
   await Supabase.initialize(
@@ -50,6 +53,8 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         TaskPage.routeName: (_) => const TaskPage(),
         FriendPage.routeName: (_) => const FriendPage(),
         CalendarPage.routeName: (_) => const CalendarPage(),
+        NewTaskPage.routeName: (_) =>
+            NewTaskPage(tasks: settings.arguments as List<Task>),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
@@ -64,6 +69,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final PersistentTabController _controller =
       PersistentTabController(initialIndex: 0);
+  String? _textNotiCount;
 
   @override
   void initState() {
@@ -78,6 +84,23 @@ class _MyAppState extends State<MyApp> {
 
       setState(() {});
     });
+
+    // TODO: optimize? plpgsql function?
+    supabase
+        .getCurrentUser()
+        .then((profile) => profile.getRooms().then((rooms) {
+              int count = 0;
+
+              for (var room in rooms) {
+                if (room.unread()) {
+                  count++;
+                }
+              }
+
+              setState(() {
+                _textNotiCount = count.toString();
+              });
+            }));
   }
 
   @override
@@ -106,9 +129,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   PersistentBottomNavBarItem _generateNavBarItem(
-      {required String title, required IconData icon}) {
+      {required String title, required IconData icon, String? badgeText}) {
     return PersistentBottomNavBarItem(
-      icon: Icon(icon),
+      icon: badgeText != null
+          ? badges.Badge(
+              badgeContent: Text(badgeText),
+              child: Icon(icon),
+            )
+          : Icon(icon),
       title: title,
       activeColorPrimary: themeData.colorScheme.primary,
       inactiveColorPrimary: Colors.grey,
@@ -117,7 +145,11 @@ class _MyAppState extends State<MyApp> {
 
   List<PersistentBottomNavBarItem> generateNavBarItems() {
     return [
-      _generateNavBarItem(title: 'Messages', icon: Icons.message),
+      _generateNavBarItem(
+        title: 'Messages',
+        icon: Icons.message,
+        badgeText: _textNotiCount,
+      ),
       _generateNavBarItem(title: 'Friends', icon: Icons.people),
       _generateNavBarItem(title: 'Tasks', icon: Icons.task),
       _generateNavBarItem(title: 'Events', icon: Icons.calendar_today),
