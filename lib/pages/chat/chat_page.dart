@@ -129,49 +129,53 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Material(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(15))),
-          color: Colors.grey[900],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    textInputAction: TextInputAction.send,
-                    onFieldSubmitted: (_) => _submitMessage(),
-                    onEditingComplete: () {},
-                    keyboardType: TextInputType.text,
-                    maxLines: null,
-                    autofocus: true,
-                    controller: _textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message',
-                      border: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _submitMessage(),
-                  child: const Row(
-                    children: [
-                      Text('Send', style: TextStyle(color: Colors.grey)),
-                      SizedBox(width: 6),
-                      Icon(Icons.send, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return Material(
+      color: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
         ),
-        const SizedBox(height: 10),
-      ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: 8,
+          left: 8,
+          right: 8,
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                textInputAction: TextInputAction.send,
+                onFieldSubmitted: (_) => _submitMessage(),
+                onEditingComplete: () {},
+                keyboardType: TextInputType.text,
+                maxLines: null,
+                autofocus: true,
+                controller: _textController,
+                decoration: const InputDecoration(
+                  hintText: 'Type a message',
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => _submitMessage(),
+              child: const Row(
+                children: [
+                  Text('Send', style: TextStyle(color: Colors.grey)),
+                  SizedBox(width: 6),
+                  Icon(Icons.send, color: Colors.grey),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

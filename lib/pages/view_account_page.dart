@@ -62,7 +62,7 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
             const SizedBox(height: 16),
             Text(
               _profile.name,
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
             // Text(
