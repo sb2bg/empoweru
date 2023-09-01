@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../utils/constants.dart';
 import '../utils/task.dart';
 
 class NewTaskPage extends StatefulWidget {
-  const NewTaskPage({super.key});
-
   static const String routeName = '/new-task';
+
+  const NewTaskPage({super.key, required this.tasks});
+
+  final List<Task> tasks;
 
   @override
   State<NewTaskPage> createState() => _NewTaskPageState();
@@ -32,7 +35,7 @@ class _NewTaskPageState extends State<NewTaskPage> {
             TextFormField(
               controller: _taskNameController,
               decoration: const InputDecoration(
-                labelText: 'Task Name',
+                hintText: 'Task Name',
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -41,10 +44,11 @@ class _NewTaskPageState extends State<NewTaskPage> {
                 return null;
               },
             ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _taskDescriptionController,
               decoration: const InputDecoration(
-                labelText: 'Task Description',
+                hintText: 'Task Description',
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -53,32 +57,40 @@ class _NewTaskPageState extends State<NewTaskPage> {
                 return null;
               },
             ),
-            TextButton.icon(
-                onPressed: () async {
-                  final date = await showDatePicker(
-                          context: context,
-                          initialDate: _taskDate,
-                          firstDate: DateTime(2015, 8),
-                          lastDate: DateTime(2101)) ??
-                      _taskDate;
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                              context: context,
+                              initialDate: _taskDate,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2101)) ??
+                          _taskDate;
 
-                  if (date != _taskDate) {
-                    setState(() {
-                      _taskDate = date;
-                    });
-                  }
-                },
-                icon: const Icon(Icons.calendar_today),
-                label: const Text("Pick a date")),
-            const SizedBox(height: 16),
+                      if (date != _taskDate) {
+                        setState(() {
+                          _taskDate = date;
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.calendar_today),
+                    label: Text(DateFormat.yMMMMd().format(_taskDate))),
+                const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 8),
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   Task.createTask(
                     name: _taskNameController.text,
                     details: _taskDescriptionController.text,
-                    deadline: DateTime.now().add(const Duration(days: 7)),
+                    deadline: _taskDate,
                   ).then((task) {
+                    widget.tasks.add(task);
                     context.pop();
                   });
                 }
