@@ -47,8 +47,25 @@ class Task {
   toggleCompleted() async {
     completed = !completed;
 
-    await supabase.from('tasks').update({
+    await supabase.rpc('update_task_completed', params: {
+      'task_id': id,
       'completed': completed,
-    }).eq('id', id);
+    });
+  }
+
+  static Future<Task> createTask(
+      {required String name,
+      required String details,
+      required DateTime deadline}) async {
+    final taskMap = {
+      'owner_id': supabase.userId,
+      'name': name,
+      'details': details,
+      'deadline': deadline.toIso8601String(),
+      'completed': false,
+    };
+
+    final taskId = await supabase.from('tasks').insert(taskMap).select('id');
+    return await Task.fromId(taskId['id']);
   }
 }
