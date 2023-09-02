@@ -48,8 +48,8 @@ class Task {
     completed = !completed;
 
     await supabase.rpc('update_task_completed', params: {
-      'task_id': id,
-      'completed': completed,
+      'tid': id,
+      'complete': completed,
     });
   }
 
