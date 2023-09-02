@@ -83,15 +83,15 @@ class _MessageEntry extends StatelessWidget {
         ),
         title: Row(
           children: [
-            lastText?.read ?? true
-                ? const SizedBox()
-                : const Padding(
-                    padding: EdgeInsets.only(right: 8.0),
+            lastText?.unread() ?? true
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
                     child: CircleAvatar(
                       radius: 4,
-                      backgroundColor: Colors.blue,
+                      backgroundColor: themeData.colorScheme.primary,
                     ),
-                  ),
+                  )
+                : const SizedBox(),
             Text(profile.name),
           ],
         ),
@@ -101,8 +101,9 @@ class _MessageEntry extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color:
-                        lastText?.read ?? true ? Colors.grey : Colors.white)),
+                    color: lastText?.unread() ?? true
+                        ? Colors.white
+                        : Colors.grey)),
             const Spacer(),
             Text(
               lastText != null
