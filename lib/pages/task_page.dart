@@ -15,19 +15,48 @@ class TaskPage extends StatefulWidget {
   State<TaskPage> createState() => _TaskPageState();
 }
 
+enum Filter {
+  all,
+  completed,
+  incomplete,
+}
+
 class _TaskPageState extends LoadingState<TaskPage> {
   late List<Task> _tasks;
+  late List<Task> _filteredTasks;
   late bool _elder;
+  Filter _filter = Filter.all;
 
   @override
   Future<void> onInit() async {
     final elder = (await supabase.getCurrentUser()).elder;
-    final tasks = await Task.getTasks(await supabase.getCurrentUser());
+    _tasks = await Task.getTasks(await supabase.getCurrentUser())
+      ..sort((a, b) => a.deadline.compareTo(b.deadline));
 
     setState(() {
-      _tasks = tasks;
+      _filteredTasks = _tasks;
       _elder = elder;
     });
+  }
+
+  filterTasks() {
+    switch (_filter) {
+      case Filter.all:
+        setState(() {
+          _filteredTasks = _tasks;
+        });
+        break;
+      case Filter.completed:
+        setState(() {
+          _filteredTasks = _tasks.where((task) => task.completed).toList();
+        });
+        break;
+      case Filter.incomplete:
+        setState(() {
+          _filteredTasks = _tasks.where((task) => !task.completed).toList();
+        });
+        break;
+    }
   }
 
   @override
@@ -51,14 +80,55 @@ class _TaskPageState extends LoadingState<TaskPage> {
 
   @override
   Widget buildLoaded(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      scrollDirection: Axis.vertical,
-      itemCount: _tasks.length,
-      itemBuilder: (context, index) {
-        final task = _tasks[index];
-        return TaskView(task: task);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
+          child: Row(
+            children: [
+              const Icon(Icons.filter_alt_outlined),
+              const SizedBox(width: 8),
+              const Text('Filter by'),
+              const SizedBox(width: 8),
+              DropdownButton<Filter>(
+                value: _filter,
+                onChanged: (value) {
+                  setState(() {
+                    _filter = value!;
+                  });
+
+                  filterTasks();
+                },
+                style: subtitleStyle,
+                items: const [
+                  DropdownMenuItem(
+                    value: Filter.all,
+                    child: Text('All'),
+                  ),
+                  DropdownMenuItem(
+                    value: Filter.completed,
+                    child: Text('Completed'),
+                  ),
+                  DropdownMenuItem(
+                    value: Filter.incomplete,
+                    child: Text('Incomplete'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: _filteredTasks.length,
+          itemBuilder: (context, index) {
+            final task = _filteredTasks[index];
+            return TaskView(task: task);
+          },
+        ),
+      ],
     );
   }
 }
