@@ -1,10 +1,10 @@
+import 'package:age_sync/pages/chat/chat_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/profile.dart';
-import 'chat/chat_page.dart';
 
 class ViewAccountPage extends StatefulWidget {
   static const routeName = '/view-account';
@@ -19,16 +19,31 @@ class ViewAccountPage extends StatefulWidget {
 
 class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
   late Profile _profile;
-  late bool _isFriend;
+  late FriendStatus _friendStatus;
+  bool _updatingFriendStatus = false;
 
   @override
   Future<void> onInit() async {
     final profile = await Profile.fromId(widget.userId);
-    final isFriend = await profile.isFriend(profile.id);
+    final friendStatus = await profile.friendStatus(supabase.userId);
 
     setState(() {
       _profile = profile;
-      _isFriend = isFriend;
+      _friendStatus = friendStatus;
+    });
+  }
+
+  updateFriendStatus(Function() friendFn) async {
+    setState(() {
+      _updatingFriendStatus = true;
+    });
+
+    await friendFn();
+    final friendStatus = await _profile.friendStatus(supabase.userId);
+
+    setState(() {
+      _friendStatus = friendStatus;
+      _updatingFriendStatus = false;
     });
   }
 
@@ -72,24 +87,46 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
             const Divider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton.icon(
-                    icon: Icon(_isFriend
-                        ? Icons.remove_circle_outline
-                        : Icons.person_add_alt_1_outlined),
-                    label: Text(
-                        _isFriend ? 'Remove Friend' : 'Send Friend Request'),
-                    onPressed: () {}),
-                _isFriend
-                    ? TextButton.icon(
-                        icon: const Icon(Icons.chat_outlined),
-                        label: const Text('Send Message'),
-                        onPressed: () {
-                          context.pushNamed(ChatPage.routeName,
-                              arguments: _profile.id);
-                        })
-                    : Container(),
-              ],
+              children: _updatingFriendStatus
+                  ? [const CircularProgressIndicator()]
+                  : [
+                      switch (_friendStatus) {
+                        FriendStatus.notFriends => TextButton.icon(
+                            onPressed: () async {
+                              await updateFriendStatus(_profile.addFriend);
+                            },
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('Send friend request')),
+                        FriendStatus.pendingSent => TextButton.icon(
+                            onPressed: () async {
+                              await updateFriendStatus(_profile.removeFriend);
+                            },
+                            icon: const Icon(Icons.person_add_disabled),
+                            label: const Text('Cancel friend request')),
+                        FriendStatus.pendingReceived => TextButton.icon(
+                            onPressed: () async {
+                              await updateFriendStatus(_profile.addFriend);
+                            },
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('Accept friend request')),
+                        FriendStatus.friends => TextButton.icon(
+                            onPressed: () async {
+                              await updateFriendStatus(_profile.removeFriend);
+                            },
+                            icon: const Icon(Icons.person_remove),
+                            label: const Text('Remove friend')),
+                      },
+                      _friendStatus == FriendStatus.friends
+                          ? TextButton.icon(
+                              icon: const Icon(Icons.message),
+                              label: const Text('Send Message'),
+                              onPressed: () {
+                                context.pushNamed(ChatPage.routeName,
+                                    arguments: _profile.id);
+                              },
+                            )
+                          : const SizedBox(),
+                    ],
             )
           ],
         ),
