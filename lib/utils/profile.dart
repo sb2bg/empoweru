@@ -2,6 +2,8 @@ import 'package:age_sync/utils/room.dart';
 
 import 'constants.dart';
 
+enum FriendStatus { notFriends, pendingSent, pendingReceived, friends }
+
 class Profile {
   Profile({
     required this.id,
@@ -27,29 +29,17 @@ class Profile {
         await supabase.from('profiles').select().eq('id', uuid).single());
   }
 
-// TODO: this can likely be optimized
   Future<List<Profile>> getFriends() async {
-    final userId = supabase.userId;
+    final friends =
+        await supabase.from('friends').select('friend').eq('user', id);
 
-    final friends = await supabase
-        .from('friendships')
-        .select()
-        .or('friend_id.eq.$userId,profile_id.eq.$userId')
-        .eq('status', true);
-
-    List<Profile> mappedFriends = [];
+    List<Profile> profiles = [];
 
     for (final friend in friends) {
-      final friendId = friend['friend_id'] as String;
-
-      if (friendId != userId) {
-        mappedFriends.add(await Profile.fromId(friendId));
-      } else {
-        mappedFriends.add(await Profile.fromId(friend['profile_id'] as String));
-      }
+      profiles.add(await Profile.fromId(friend['friend']));
     }
 
-    return mappedFriends;
+    return profiles;
   }
 
   Future<List<RoomMeta>> getRooms() async {
@@ -61,15 +51,48 @@ class Profile {
     return await Future.wait(roomsList.map((e) => RoomMeta.fromRoomId(e.id)));
   }
 
-  Future<bool> isFriend(String otherId) async {
-    return await supabase
-            .from('friendships')
-            .select()
-            .eq('profile_id', id)
-            .eq('friend_id', id)
-            .eq('profile_id', otherId)
-            .eq('friend_id', otherId)
-            .eq('status', true) !=
-        0;
+  Future<FriendStatus> friendStatus(String otherId) async {
+    final sentList = await supabase
+        .from('friendships')
+        .select()
+        .eq('profile_id', otherId)
+        .eq('friend_id', id)
+        .select();
+
+    final sent = sentList.length > 0;
+
+    final recList = await supabase
+        .from('friendships')
+        .select()
+        .eq('profile_id', id)
+        .eq('friend_id', otherId)
+        .select();
+
+    final received = recList.length > 0;
+
+    if (sent && received) {
+      return FriendStatus.friends;
+    } else if (sent) {
+      return FriendStatus.pendingSent;
+    } else if (received) {
+      return FriendStatus.pendingReceived;
+    } else {
+      return FriendStatus.notFriends;
+    }
+  }
+
+  addFriend() async {
+    await supabase.from('friendships').insert({
+      'friend_id': id,
+      'profile_id': supabase.userId,
+    });
+  }
+
+  removeFriend() async {
+    await supabase
+        .from('friendships')
+        .delete()
+        .eq('friend_id', id)
+        .eq('profile_id', supabase.userId);
   }
 }
