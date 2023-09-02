@@ -69,4 +69,8 @@ class Message {
         .select('id')
         .single();
   }
+
+  bool unread() {
+    return !read && !isMine;
+  }
 }
