@@ -97,9 +97,11 @@ class _MyAppState extends State<MyApp> {
                 }
               }
 
-              setState(() {
-                _textNotiCount = count.toString();
-              });
+              if (count > 0) {
+                setState(() {
+                  _textNotiCount = count.toString();
+                });
+              }
             }));
   }
 
