@@ -29,7 +29,7 @@ class _FriendPageState extends LoadingState<FriendPage> {
         title: const Text('Friends'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.person_add),
             onPressed: () {
               print('TODO');
             },
@@ -42,10 +42,27 @@ class _FriendPageState extends LoadingState<FriendPage> {
     return Padding(
         padding: const EdgeInsets.only(top: 8.0),
         child: _friends.isEmpty
-            ? const Center(
-                child: Text('You have no friends yet.'),
-              )
+            ? Center(
+                child: IntrinsicWidth(
+                    child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'You have no friends',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      print('TODO');
+                    },
+                    child: const Text('Add friends'),
+                  )
+                ],
+              )))
             : ListView.separated(
+                itemCount: _friends.length,
                 itemBuilder: (context, index) {
                   final friend = _friends[index];
 
@@ -62,7 +79,6 @@ class _FriendPageState extends LoadingState<FriendPage> {
                   );
                 },
                 separatorBuilder: (context, index) => const Divider(),
-                itemCount: _friends.length,
               ));
   }
 }
