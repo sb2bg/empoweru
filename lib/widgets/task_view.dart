@@ -80,15 +80,24 @@ class _TaskViewState extends State<TaskView> {
         );
       },
       child: ListTile(
-        title: AnimatedCrossFade(
-            duration: const Duration(milliseconds: 250),
-            crossFadeState: widget.task.completed
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            firstChild: Text(widget.task.name, style: subtitleStyle),
-            secondChild: Text(widget.task.name,
-                style: subtitleStyle.copyWith(
-                    decoration: TextDecoration.lineThrough))),
+        title: Row(
+          children: [
+            AnimatedCrossFade(
+                duration: const Duration(milliseconds: 250),
+                crossFadeState: widget.task.completed
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: Text(widget.task.name, style: subtitleStyle),
+                secondChild: Text(widget.task.name,
+                    style: subtitleStyle.copyWith(
+                        decoration: TextDecoration.lineThrough))),
+            const SizedBox(width: 8),
+            Text(
+              '${format(widget.task.createdAt)} • ${widget.task.completed ? 'Completed' : 'Due ${format(widget.task.deadline)}'}',
+              style: metaStyle,
+            ),
+          ],
+        ),
         subtitle: Text(widget.task.details, style: metaStyle),
         trailing: Checkbox(
           value: widget.task.completed,
