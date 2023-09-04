@@ -1,10 +1,10 @@
 import 'package:age_sync/pages/account_page.dart';
+import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/pages/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
 import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
-import 'package:age_sync/pages/error_page.dart';
 import 'package:age_sync/pages/friend_page.dart';
 import 'package:age_sync/pages/log_in_page.dart';
 import 'package:age_sync/pages/new_task_page.dart';
@@ -12,6 +12,7 @@ import 'package:age_sync/pages/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/task.dart';
+import 'package:age_sync/widgets/error_page.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -55,6 +56,7 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         CalendarPage.routeName: (_) => const CalendarPage(),
         NewTaskPage.routeName: (_) =>
             NewTaskPage(tasks: settings.arguments as List<Task>),
+        AdminPage.routeName: (_) => const AdminPage(),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
@@ -67,8 +69,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final PersistentTabController _controller =
-      PersistentTabController(initialIndex: 0);
+  final PersistentTabController _controller = PersistentTabController(
+      initialIndex:
+          4); // TODO: change to 0 when we have a home page (not account page)
   String? _textNotiCount;
 
   @override
