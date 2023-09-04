@@ -1,4 +1,5 @@
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/widgets/error_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,10 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   @nonVirtual
   initState() {
     super.initState();
+    _initStateLogic();
+  }
 
+  _initStateLogic() {
     final start = DateTime.now();
 
     context.tryDatabaseAsync(
@@ -50,7 +54,7 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
     final scaffold = Scaffold(
         appBar: constAppBar ?? (_loading ? loadingAppBar : loadedAppBar),
         body: _error
-            ? error
+            ? ErrorPage(error: 'Failed to load page', onRetry: _initStateLogic)
             : Column(
                 children: [
                   if (header != null) header!,
