@@ -10,19 +10,22 @@ class Profile {
     required this.name,
     required this.avatarUrl,
     required this.elder,
+    required this.admin,
   });
 
   final String id;
   final String name;
   final String avatarUrl;
   final bool elder;
+  final bool admin;
 
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
         name = map['name'] ??
             '', // TODO: remove null check, enforce name not null in db
         avatarUrl = map['avatar_url'],
-        elder = map['elder'];
+        elder = map['elder'],
+        admin = map['admin'];
 
   static Future<Profile> fromId(String uuid) async {
     return Profile.fromMap(
