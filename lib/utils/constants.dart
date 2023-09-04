@@ -11,16 +11,12 @@ const supabaseAnonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0eHlubWt6amV3b3RwbXh4eHZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg4MDAxNzAsImV4cCI6MjAwNDM3NjE3MH0.dHo4Jcnjx2xLuTRXWdWqQByAn6G-1DL6bqPQ5lplyZA';
 const iosClientId =
     '585037508158-uh107osoinaus299vu9vb9kcuav3ev0q.apps.googleusercontent.com';
+const defaultAvatarUrl =
+    'https://xtxynmkzjewotpmxxxvy.supabase.co/storage/v1/object/public/avatars/default_avatar.jpg';
 
 final supabase = Supabase.instance.client;
 final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
-const error = Scaffold(
-    body: Center(
-        child: Text('Failed to load data.',
-            style: TextStyle(
-              color: Colors.grey,
-            ))));
 const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 const subtitleStyle = TextStyle(fontSize: 16);
 const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
@@ -42,6 +38,35 @@ showReportThankYouDialog(BuildContext context) {
               ),
             ],
           ));
+}
+
+extension Confirmation on BuildContext {
+  Future<bool> confirmation(String action) async {
+    Future<bool> future = Future.value(false);
+
+    await showDialog(
+      context: this,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm'),
+        content: Text('Are you sure you want to $action?'),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              future = Future.value(true);
+              context.pop();
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    return future;
+  }
 }
 
 extension ShowSnackBar on BuildContext {
