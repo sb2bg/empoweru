@@ -1,6 +1,9 @@
+import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../utils/constants.dart';
 import '../utils/profile.dart';
@@ -57,15 +60,57 @@ class _AccountPageState extends LoadingState<AccountPage> {
                                   onTap: () => print('TODO'),
                                 ),
                                 ListTile(
-                                  leading: const Icon(Icons.photo),
-                                  title: const Text('Choose from gallery'),
-                                  onTap: () => print('TODO'),
-                                ),
+                                    leading: const Icon(Icons.photo),
+                                    title: const Text('Choose from gallery'),
+                                    onTap: () async {
+                                      final picker = ImagePicker();
+
+                                      final imageFile = await picker.pickImage(
+                                        source: ImageSource.gallery,
+                                        maxWidth: 300,
+                                        maxHeight: 300,
+                                      );
+
+                                      if (imageFile == null) {
+                                        return;
+                                      }
+
+                                      final bytes =
+                                          await imageFile.readAsBytes();
+                                      final fileExt =
+                                          imageFile.path.split('.').last;
+                                      final fileName =
+                                          '${supabase.userId}.$fileExt';
+                                      final filePath = fileName;
+                                      await supabase.storage
+                                          .from('avatars')
+                                          .uploadBinary(
+                                            filePath,
+                                            bytes,
+                                            fileOptions: FileOptions(
+                                                contentType:
+                                                    imageFile.mimeType),
+                                          );
+                                      final imageUrl = await supabase.storage
+                                          .from('avatars')
+                                          .createSignedUrl(filePath,
+                                              60 * 60 * 24 * 365 * 10);
+
+                                      // TODO: this won't work with RLS
+                                      await supabase.from('profiles').upsert({
+                                        'id': supabase.userId,
+                                        'avatar_url': imageUrl,
+                                      });
+                                    }),
                                 ListTile(
-                                  leading: const Icon(Icons.delete),
-                                  title: const Text('Remove avatar'),
-                                  onTap: () => print('TODO'),
-                                ),
+                                    leading: const Icon(Icons.delete),
+                                    title: const Text('Remove avatar'),
+                                    onTap: () {
+                                      supabase.from('profiles').upsert({
+                                        'id': supabase.userId,
+                                        'avatar_url': defaultAvatarUrl,
+                                      }).then((value) => context.pop());
+                                    }),
                                 const Divider(),
                                 ListTile(
                                   leading: const Icon(Icons.close),
@@ -88,6 +133,17 @@ class _AccountPageState extends LoadingState<AccountPage> {
                 onPressed: () => print('TODO'),
               )),
           const Divider(),
+          if (_profile.admin)
+            Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.admin_panel_settings),
+                  title: const Text('Admin Panel'),
+                  onTap: () => context.pushNamed(AdminPage.routeName),
+                ),
+                const Divider(),
+              ],
+            ),
           ListTile(
               leading: const Icon(Icons.email_outlined),
               title: const Text('Change email'),
