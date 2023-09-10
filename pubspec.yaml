@@ -46,6 +46,7 @@ dependencies:
   table_calendar: ^3.0.9
   intl: ^0.18.1
   badges: ^3.1.2
+  shared_preferences: ^2.2.1
 
 dev_dependencies:
   flutter_test:
