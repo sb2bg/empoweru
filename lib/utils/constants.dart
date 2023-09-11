@@ -1,6 +1,7 @@
 import 'package:age_sync/utils/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../main.dart';
@@ -15,14 +16,22 @@ const defaultAvatarUrl =
     'https://xtxynmkzjewotpmxxxvy.supabase.co/storage/v1/object/public/avatars/default_avatar.jpg';
 
 final supabase = Supabase.instance.client;
+late final SharedPreferences prefs;
 final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
 const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 const subtitleStyle = TextStyle(fontSize: 16);
 const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
 const whiteMetaStyle = TextStyle(fontSize: 12, color: Colors.white);
-
 const unexpectedErrorMessage = 'Unexpected error occurred.';
+
+enum PrefKeys {
+  newUser('new_user');
+
+  final String key;
+
+  const PrefKeys(this.key);
+}
 
 showReportThankYouDialog(BuildContext context) {
   showDialog(
