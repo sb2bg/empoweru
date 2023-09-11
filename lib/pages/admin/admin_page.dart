@@ -1,3 +1,5 @@
+import "package:age_sync/pages/chat/spectate_room_page.dart";
+import "package:age_sync/pages/view_account_page.dart";
 import "package:age_sync/utils/constants.dart";
 import "package:age_sync/utils/loading_state.dart";
 import "package:age_sync/utils/profile.dart";
@@ -28,7 +30,6 @@ class _AdminPageState extends LoadingState<AdminPage>
     const Tab(icon: Icon(Icons.task)),
     const Tab(icon: Icon(Icons.message)),
     const Tab(icon: Icon(Icons.report)),
-    const Tab(icon: Icon(Icons.admin_panel_settings)),
   ];
 
   @override
@@ -86,80 +87,121 @@ class _AdminPageState extends LoadingState<AdminPage>
                 final profile = _profiles[index];
 
                 return Card(
-                    child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: CachedNetworkImageProvider(
-                      profile.avatarUrl,
+                    child: GestureDetector(
+                  onTap: () {
+                    context.pushNamed(ViewAccountPage.routeName,
+                        arguments: profile.id);
+                  },
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: CachedNetworkImageProvider(
+                        profile.avatarUrl,
+                      ),
+                    ),
+                    title: Text(profile.name),
+                    subtitle: Text(
+                        profile.admin
+                            ? "Admin"
+                            : profile.elder
+                                ? "Elder"
+                                : "Volunteer",
+                        style: TextStyle(
+                            color: profile.admin
+                                ? Colors.red
+                                : profile.elder
+                                    ? Colors.blue
+                                    : Colors.green)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        final sure = await context
+                            .confirmation('delete ${profile.name}\'s profile');
+
+                        if (!sure) {
+                          return;
+                        }
+
+                        await supabase
+                            .from("profiles")
+                            .delete()
+                            .eq("id", profile.id);
+
+                        setState(() {
+                          _profiles.remove(profile);
+                        });
+                      },
                     ),
                   ),
-                  title: Text(profile.name),
-                  subtitle: Text(profile.elder ? "Elder" : "Volunteer"),
+                ));
+              }),
+          ListView.builder(
+              shrinkWrap: true,
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
+
+                return Card(
+                    child: ListTile(
+                  title: Text(task.name),
+                  subtitle: Text(task.details),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
                       final sure = await context
-                          .confirmation('delete ${profile.name}\'s profile');
+                          .confirmation('delete the task "${task.name}"');
 
                       if (!sure) {
                         return;
                       }
 
-                      await supabase
-                          .from("profiles")
-                          .delete()
-                          .eq("id", profile.id);
+                      await supabase.from("tasks").delete().eq("id", task.id);
 
                       setState(() {
-                        _profiles.remove(profile);
+                        _tasks.remove(task);
                       });
                     },
                   ),
                 ));
               }),
-          Center(
-              child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = _tasks[index];
+          ListView.builder(
+              shrinkWrap: true,
+              itemCount: _rooms.length,
+              itemBuilder: (context, index) {
+                final room = _rooms[index];
 
-                    return Card(
-                        child: ListTile(
-                      title: Text(task.name),
-                      subtitle: Text(task.details),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () async {
-                          final sure = await context
-                              .confirmation('delete the task "${task.name}"');
+                return GestureDetector(
+                  onTap: () async {
+                    context.pushNamed(SpectateChatRoomPage.routeName,
+                        arguments: room.room.id);
+                  },
+                  child: Card(
+                      child: ListTile(
+                    title: Text('${room.user1.name} and ${room.user2.name}'),
+                    subtitle: Text(room.lastMessage?.content ?? 'No messages'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        final sure = await context.confirmation(
+                            'delete the chat between ${room.user1.name} and ${room.user2.name}');
 
-                          if (!sure) {
-                            return;
-                          }
+                        if (!sure) {
+                          return;
+                        }
 
-                          await supabase
-                              .from("tasks")
-                              .delete()
-                              .eq("id", task.id);
+                        await supabase
+                            .from("rooms")
+                            .delete()
+                            .eq("id", room.room.id);
 
-                          setState(() {
-                            _tasks.remove(task);
-                          });
-                        },
-                      ),
-                    ));
-                  })),
-          Center(
-              child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _rooms.length,
-                  itemBuilder: (context, index) {
-                    final room = _rooms[index];
-
-                    return const Text('Placeholder'); // TODO
-                  })),
+                        setState(() {
+                          _rooms.remove(room);
+                        });
+                      },
+                    ),
+                  )),
+                );
+              }),
           Center(child: Text("Reports")),
-          Center(child: Text("Admins")),
         ],
       ),
     );
