@@ -2,10 +2,12 @@ import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/pages/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
+import 'package:age_sync/pages/chat/spectate_room_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
 import 'package:age_sync/pages/email_log_in_page.dart';
 import 'package:age_sync/pages/email_sign_up_page.dart';
 import 'package:age_sync/pages/friend_page.dart';
+import 'package:age_sync/pages/intro_page.dart';
 import 'package:age_sync/pages/log_in_page.dart';
 import 'package:age_sync/pages/new_task_page.dart';
 import 'package:age_sync/pages/task_page.dart';
@@ -17,6 +19,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:badges/badges.dart' as badges;
 
@@ -26,6 +29,8 @@ Future<void> main() async {
     anonKey: supabaseAnonKey,
     authFlowType: AuthFlowType.pkce,
   );
+
+  prefs = await SharedPreferences.getInstance();
 
   runApp(const MyApp());
 }
@@ -57,6 +62,8 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         NewTaskPage.routeName: (_) =>
             NewTaskPage(tasks: settings.arguments as List<Task>),
         AdminPage.routeName: (_) => const AdminPage(),
+        SpectateChatRoomPage.routeName: (_) =>
+            SpectateChatRoomPage(roomId: settings.arguments as String),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
@@ -73,6 +80,7 @@ class _MyAppState extends State<MyApp> {
       initialIndex:
           4); // TODO: change to 0 when we have a home page (not account page)
   String? _textNotiCount;
+  bool newUser = prefs.getBool(PrefKeys.newUser.key) ?? false;
 
   @override
   void initState() {
@@ -86,6 +94,7 @@ class _MyAppState extends State<MyApp> {
       }
 
       setState(() {});
+      prefs.setBool(PrefKeys.newUser.key, false);
     });
 
     // TODO: optimize? plpgsql function?
@@ -121,14 +130,16 @@ class _MyAppState extends State<MyApp> {
       darkTheme: themeData,
       initialRoute: '/',
       home: supabase.auth.currentSession != null
-          ? PersistentTabView(
-              context,
-              controller: _controller,
-              screens: generateScreens(),
-              items: generateNavBarItems(),
-              backgroundColor: Colors.grey[900]!,
-              navBarStyle: NavBarStyle.style3,
-            )
+          ? newUser
+              ? const IntroPage()
+              : PersistentTabView(
+                  context,
+                  controller: _controller,
+                  screens: generateScreens(),
+                  items: generateNavBarItems(),
+                  backgroundColor: Colors.grey[900]!,
+                  navBarStyle: NavBarStyle.style3,
+                )
           : const LogInPage(type: LogInType.signIn),
     ));
   }
