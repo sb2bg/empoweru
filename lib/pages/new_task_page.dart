@@ -58,7 +58,7 @@ class _NewTaskPageState extends State<NewTaskPage> {
               },
             ),
             const SizedBox(height: 8),
-            Row(
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton.icon(
@@ -78,7 +78,37 @@ class _NewTaskPageState extends State<NewTaskPage> {
                     },
                     icon: const Icon(Icons.calendar_today),
                     label: Text(DateFormat.yMMMMd().format(_taskDate))),
-                const SizedBox(width: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        final time = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now()) ??
+                            TimeOfDay.now();
+
+                        final date = DateTime(_taskDate.year, _taskDate.month,
+                            _taskDate.day, time.hour, time.minute);
+
+                        if (date != _taskDate) {
+                          setState(() {
+                            _taskDate = date;
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.access_time),
+                      label: Text(DateFormat.jm().format(_taskDate)),
+                    ),
+                    TextButton.icon(
+                        onPressed: () {
+                          print('Open repeat dialog which, when opened, will '
+                              'show a list of options for repeating the task such as daily, weekly, monthly, etc.');
+                        },
+                        icon: const Icon(Icons.repeat),
+                        label: const Text('Repeat')),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 8),
