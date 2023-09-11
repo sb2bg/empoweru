@@ -42,11 +42,11 @@ class _TaskViewState extends State<TaskView> {
               children: [
                 Text(widget.task.name, style: titleStyle),
                 Text(
-                  'By ${_name ?? 'Unknown'} ${format(widget.task.createdAt)}',
+                  'By ${_name ?? 'Unknown'} ${DateFormat.yMMMMd().format(widget.task.createdAt)}',
                   style: whiteMetaStyle,
                 ),
                 Text(
-                  'Due ${DateFormat('MM-dd-yyyy, hh:mm').format(widget.task.deadline)}',
+                  'Due ${DateFormat.yMMMMd().format(widget.task.deadline)}',
                   style: whiteMetaStyle,
                 ),
               ],
@@ -80,22 +80,35 @@ class _TaskViewState extends State<TaskView> {
         );
       },
       child: ListTile(
-        title: Row(
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedCrossFade(
-                duration: const Duration(milliseconds: 250),
-                crossFadeState: widget.task.completed
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                firstChild: Text(widget.task.name, style: subtitleStyle),
-                secondChild: Text(widget.task.name,
-                    style: subtitleStyle.copyWith(
-                        decoration: TextDecoration.lineThrough))),
-            const SizedBox(width: 8),
-            Text(
-              '${format(widget.task.createdAt)} • ${widget.task.completed ? 'Completed' : 'Due ${format(widget.task.deadline)}'}',
-              style: metaStyle,
+            Row(
+              children: [
+                AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 250),
+                    crossFadeState: widget.task.completed
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    firstChild: Text(widget.task.name, style: subtitleStyle),
+                    secondChild: Text(widget.task.name,
+                        style: subtitleStyle.copyWith(
+                            decoration: TextDecoration.lineThrough))),
+              ],
             ),
+            Text(
+              'by ${_name ?? 'Unknown'} on ${DateFormat.yMMMMd().format(widget.task.createdAt)}',
+              style: metaStyle.copyWith(
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+                widget.task.completed
+                    ? 'Completed'
+                    : 'due ${DateFormat.yMMMMd().format(widget.task.deadline)}',
+                style: metaStyle),
+            const SizedBox(height: 4),
           ],
         ),
         subtitle: Text(widget.task.details, style: metaStyle),
