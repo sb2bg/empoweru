@@ -65,7 +65,8 @@ class Task {
       'completed': false,
     };
 
-    final taskId = await supabase.from('tasks').insert(taskMap).select('id');
-    return await Task.fromId(taskId['id']);
+    final taskId =
+        await supabase.from('tasks').insert(taskMap).select('id').single();
+    return await Task.fromId(taskId['id'] as String);
   }
 }
