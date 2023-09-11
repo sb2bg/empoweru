@@ -28,27 +28,38 @@ class Room {
 
 class RoomMeta {
   const RoomMeta(
-      {required this.room, required this.lastMessage, required this.other});
+      {required this.room,
+      required this.lastMessage,
+      required this.user1,
+      required this.user2});
 
   final Room room;
   final Message? lastMessage;
-  final Profile other;
+  final Profile user1;
+  final Profile user2;
 
   static Future<RoomMeta> fromRoomId(String roomId) async {
     final room = await Room.fromId(roomId);
     final lastMessage = await Message.lastMessageFromRoomId(roomId);
 
-    final map = await supabase
+    final participants = await supabase
         .from('room_participants')
         .select('profile_id')
         .eq('room_id', roomId)
-        .neq('profile_id', supabase.userId)
-        .single();
+        .limit(2);
 
-    final other = await Profile.fromId(map['profile_id']);
+    if (participants.length != 2) {
+      throw Exception('Room must have 2 participants');
+    }
 
-    return RoomMeta(room: room, lastMessage: lastMessage, other: other);
+    final user1 = await Profile.fromId(participants[0]['profile_id']);
+    final user2 = await Profile.fromId(participants[1]['profile_id']);
+
+    return RoomMeta(
+        room: room, lastMessage: lastMessage, user1: user1, user2: user2);
   }
+
+  Profile get other => user1.id == supabase.userId ? user2 : user1;
 
   bool unread() {
     if (lastMessage == null) {
