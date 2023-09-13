@@ -21,13 +21,19 @@ class Profile {
 
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
-        name = map['name'] ??
-            '', // TODO: remove null check, enforce name not null in db
+        name = map['name'],
         avatarUrl = map['avatar_url'],
-        elder = map['elder'],
+        elder = isElder(DateTime.parse(map['birth_date'])),
         admin = map['admin'];
 
+  static bool isElder(DateTime birthDate) =>
+      DateTime.now().year - birthDate.year >= 65;
+
   static Future<Profile> fromId(String uuid) async {
+    if (uuid == supabase.userId) {
+      return await supabase.getCurrentUser();
+    }
+
     return Profile.fromMap(
         await supabase.from('profiles').select().eq('id', uuid).single());
   }

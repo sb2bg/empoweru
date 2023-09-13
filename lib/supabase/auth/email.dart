@@ -8,10 +8,10 @@ Future<void> signUpWithEmail(
     {required String email,
     required String password,
     required String name,
-    required bool elder}) async {
+    required DateTime birthDate}) async {
   await supabase.auth.signUp(
     email: email,
     password: password,
-    data: {'full_name': name, 'elder': elder},
+    data: {'full_name': name, 'birth_date': birthDate.toIso8601String()},
   );
 }
