@@ -105,7 +105,7 @@ class _EmailSignUpPageState extends State<EmailSignUpPage> {
           email: _emailController.text,
           password: _passwordController.text,
           name: _nameController.text,
-          elder: true);
+          birthDate: DateTime.now()); // TODO: get birthdate from user
     } on AuthException catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(error.message),
