@@ -49,25 +49,38 @@ class _SpectateChatRoomPageState extends LoadingState<SpectateChatRoomPage> {
     return Column(
       children: [
         Expanded(
-          child: StreamBuilder<List<Message>>(
+          child: StreamBuilder(
             stream: _messagesStream,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                final messages = snapshot.data!;
+                final messages = snapshot.data ?? [];
 
-                return ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
+                return Column(
+                  children: [
+                    Expanded(
+                      child: messages.isEmpty
+                          ? const Center(
+                              child: Text('No messages yet'),
+                            )
+                          : ListView.builder(
+                              reverse: true,
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                final message = messages[index];
 
-                    return ChatBubbleReceived(
-                      profile: message.profileId == user1.id ? user1 : user2,
-                      message: message,
-                    );
-                  },
+                                return ChatBubbleReceived(
+                                  message: message,
+                                  profile: message.profileId == user1.id
+                                      ? user1
+                                      : user2,
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 );
               } else {
-                return const Center(child: CircularProgressIndicator());
+                return preloader;
               }
             },
           ),
