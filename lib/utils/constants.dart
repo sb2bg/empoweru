@@ -224,7 +224,9 @@ extension CurrentUser on SupabaseClient {
     }
 
     final id = currentUser.id;
-    cachedProfile = await Profile.fromId(id);
+
+    cachedProfile = Profile.fromMap(
+        await supabase.from('profiles').select().eq('id', id).single());
     lastProfileFetch = DateTime.now();
 
     return cachedProfile!;
