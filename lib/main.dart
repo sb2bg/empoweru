@@ -79,8 +79,8 @@ class _MyAppState extends State<MyApp> {
   final PersistentTabController _controller = PersistentTabController(
       initialIndex:
           4); // TODO: change to 0 when we have a home page (not account page)
-  String? _textNotiCount;
   bool newUser = prefs.getBool(PrefKeys.newUser.key) ?? false;
+  bool loggedIn() => supabase.auth.currentSession != null;
 
   @override
   void initState() {
@@ -96,25 +96,27 @@ class _MyAppState extends State<MyApp> {
       setState(() {});
       prefs.setBool(PrefKeys.newUser.key, false);
     });
+  }
 
+  String? getMessageCountBadge() {
     // TODO: optimize? plpgsql function?
-    supabase
-        .getCurrentUser()
-        .then((profile) => profile.getRooms().then((rooms) {
-              int count = 0;
+    if (loggedIn()) {
+      supabase
+          .getCurrentUser()
+          .then((profile) => profile.getRooms().then((rooms) {
+                int count = 0;
 
-              for (var room in rooms) {
-                if (room.unread()) {
-                  count++;
+                for (var room in rooms) {
+                  if (room.unread()) {
+                    count++;
+                  }
                 }
-              }
 
-              if (count > 0) {
-                setState(() {
-                  _textNotiCount = count.toString();
-                });
-              }
-            }));
+                return count > 0 ? count.toString() : null;
+              }));
+    }
+
+    return null;
   }
 
   @override
@@ -129,7 +131,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: ThemeMode.dark,
       darkTheme: themeData,
       initialRoute: '/',
-      home: supabase.auth.currentSession != null
+      home: loggedIn()
           ? newUser
               ? const IntroPage()
               : PersistentTabView(
@@ -164,7 +166,7 @@ class _MyAppState extends State<MyApp> {
       _generateNavBarItem(
         title: 'Messages',
         icon: Icons.message,
-        badgeText: _textNotiCount,
+        badgeText: getMessageCountBadge(),
       ),
       _generateNavBarItem(title: 'Friends', icon: Icons.people),
       _generateNavBarItem(title: 'Tasks', icon: Icons.task),
