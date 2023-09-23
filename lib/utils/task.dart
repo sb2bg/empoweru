@@ -1,4 +1,4 @@
-import 'package:age_sync/utils/profile.dart';
+import 'package:age_sync/utils/task_repeat.dart';
 
 import 'constants.dart';
 
@@ -10,6 +10,7 @@ class Task {
     required this.details,
     required this.deadline,
     required this.createdAt,
+    required this.repeat,
     required this.completed,
   });
 
@@ -19,6 +20,7 @@ class Task {
   final String details;
   final DateTime deadline;
   final DateTime createdAt;
+  final TaskRepeat repeat;
   bool completed;
 
   Task.fromMap(Map<String, dynamic> map)
@@ -28,6 +30,8 @@ class Task {
         details = map['details'] as String,
         deadline = DateTime.parse(map['deadline'] as String),
         createdAt = DateTime.parse(map['created_at'] as String),
+        repeat = TaskRepeat.values
+            .firstWhere((element) => element.name == map['repeat'] as String),
         completed = map['completed'] as bool;
 
   static Future<Task> fromId(String uuid) async {
@@ -35,13 +39,14 @@ class Task {
         await supabase.from('tasks').select().eq('id', uuid).single());
   }
 
-  static Future<List<Task>> getTasks(Profile user) async {
-    final List<dynamic> tasks =
-        await supabase.from(user.elder ? 'tasks' : 'task_assignees').select();
+  static Future<List<Task>> getTasks(String id) async {
+    final List<dynamic> tasks = await supabase
+        .from('tasks')
+        .select()
+        .order('deadline', ascending: true);
 
-    return await Future.wait(tasks.map((map) => Task.fromId(map[
-            user.elder ? 'id' : 'task_id']
-        as String))); // id vs task_id because tasks uses id, task_assignees uses task_id
+    return await Future.wait(
+        tasks.map((map) => Task.fromId(map['id'] as String)));
   }
 
   toggleCompleted() async {
@@ -56,17 +61,27 @@ class Task {
   static Future<Task> createTask(
       {required String name,
       required String details,
-      required DateTime deadline}) async {
+      required DateTime deadline,
+      required TaskRepeat repeat,
+      String? assign}) async {
     final taskMap = {
       'owner_id': supabase.userId,
       'name': name,
       'details': details,
       'deadline': deadline.toIso8601String(),
-      'completed': false,
+      'repeat': repeat.name
     };
 
     final taskId =
         await supabase.from('tasks').insert(taskMap).select('id').single();
+
+    if (assign != null) {
+      await supabase.from('task_assignees').insert({
+        'task_id': taskId['id'],
+        'assignee_id': assign,
+      });
+    }
+
     return await Task.fromId(taskId['id'] as String);
   }
 }
