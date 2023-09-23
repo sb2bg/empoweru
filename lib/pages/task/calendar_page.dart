@@ -1,12 +1,15 @@
 import 'dart:collection';
 
+import 'package:age_sync/pages/task/new_task_page.dart';
+import 'package:age_sync/utils/profile.dart';
+import 'package:age_sync/utils/task_repeat.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../utils/constants.dart';
-import '../utils/loading_state.dart';
-import '../utils/task.dart';
-import '../widgets/task_view.dart';
+import '../../utils/constants.dart';
+import '../../utils/loading_state.dart';
+import '../../utils/task.dart';
+import '../../widgets/task_view.dart';
 
 class CalendarPage extends StatefulWidget {
   static const routeName = '/calendar';
@@ -18,28 +21,25 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends LoadingState<CalendarPage> {
-  late DateTime _focusedDay;
+  DateTime _focusedDay = DateTime.now();
   late List<Task> _selectedTasks;
   CalendarFormat _calendarFormat = CalendarFormat.month;
   late LinkedHashMap<DateTime, List<Task>> _events;
+  late Profile _profile;
 
   @override
   AppBar get constAppBar => AppBar(
         title: const Text('Events'),
       );
 
-  @override
-  Future<void> onInit() async {
-    final List<Task> tasks =
-        await Task.getTasks(await supabase.getCurrentUser());
-
+  List<Task> getEvents() {
     _events = LinkedHashMap(
       equals: isSameDay,
       hashCode: (date) => date.day ^ date.month ^ date.year,
     );
 
     _events.addAll(
-      tasks.fold(
+      taskController.tasks.fold(
         <DateTime, List<Task>>{},
         (map, task) {
           final date = task.deadline;
@@ -49,10 +49,57 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
       ),
     );
 
+    return _events[_focusedDay] ?? [];
+  }
+
+  @override
+  Future<void> onInit() async {
+    _profile = await supabase.getCurrentUser();
+
+    if (!firstLoad) {
+      await taskController.reload();
+    }
+
+    taskController.addListener(() {
+      if (!mounted) return; // Prevent setState() if not mounted
+
+      setState(() {
+        _selectedTasks = getTasksForDay(_focusedDay);
+      });
+    });
+
+    await taskController.future;
+
     setState(() {
       _focusedDay = DateTime.now();
-      _selectedTasks = _events[_focusedDay] ?? [];
+      _selectedTasks = getEvents();
     });
+  }
+
+  List<Task> getTasksForDay(DateTime day) {
+    List<Task> tasks = [];
+
+    List<Task> allEvents = _events.values
+        .expand((element) => element)
+        .where((element) =>
+            day.isAfter(element.deadline) || isSameDay(day, element.deadline))
+        .toList();
+
+    tasks.addAll(allEvents
+        .where((event) =>
+            event.repeat == TaskRepeat.daily ||
+            (event.deadline.weekday == day.weekday &&
+                event.repeat == TaskRepeat.weekly) ||
+            (event.deadline.day == day.day &&
+                event.repeat == TaskRepeat.monthly) ||
+            (event.deadline.day == day.day &&
+                event.deadline.month == day.month &&
+                event.repeat == TaskRepeat.yearly) ||
+            (event.repeat == TaskRepeat.never &&
+                isSameDay(event.deadline, day)))
+        .toList());
+
+    return tasks;
   }
 
   @override
@@ -69,12 +116,10 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
               _focusedDay = focusedDay;
-              _selectedTasks = _events[selectedDay] ?? [];
+              _selectedTasks = getTasksForDay(selectedDay);
             });
           },
-          eventLoader: (day) {
-            return _events[day] ?? [];
-          },
+          eventLoader: getTasksForDay,
           availableCalendarFormats: const {
             CalendarFormat.month: 'Month',
             CalendarFormat.week: 'Week',
@@ -102,6 +147,18 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
         ),
         const SizedBox(height: 16),
         const Divider(),
+        if (_profile.elder)
+          Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: const Text('Add Task'),
+                onTap: () => context.pushNamed(NewTaskPage.routeName,
+                    arguments: _focusedDay),
+              ),
+              const Divider(),
+            ],
+          ),
         EventView(tasks: _selectedTasks)
       ],
     );
@@ -128,9 +185,11 @@ class _EventViewState extends State<EventView> {
           ]
         : widget.tasks.map((task) => TaskView(task: task)).toList();
 
-    return ListView(
-      shrinkWrap: true,
-      children: children,
+    return Expanded(
+      child: ListView(
+        shrinkWrap: true,
+        children: children,
+      ),
     );
   }
 }
