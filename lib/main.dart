@@ -36,7 +36,6 @@ Future<void> main() async {
 
   prefs = await SharedPreferences.getInstance();
   taskController = TaskController();
-
   messageController = MessageController();
 
   runApp(const MyApp());
@@ -90,13 +89,24 @@ class _MyAppState extends State<MyApp> {
           4); // TODO: change to 0 when we have a home page (not account page)
   bool newUser = prefs.getBool(PrefKeys.newUser.key) ?? false;
   bool loggedIn() => supabase.auth.currentSession != null;
+  int unread = 0;
 
   @override
   void initState() {
     super.initState();
 
-    messageController.addListener(() {
-      setState(() {});
+    messageController.messageStream.listen((event) {
+      int count = 0;
+
+      for (final room in event.values) {
+        if (room.first.unread()) {
+          count++;
+        }
+      }
+
+      setState(() {
+        unread = count;
+      });
     });
 
     supabase.auth.onAuthStateChange.listen((data) {
@@ -109,27 +119,6 @@ class _MyAppState extends State<MyApp> {
       setState(() {});
       prefs.setBool(PrefKeys.newUser.key, false);
     });
-  }
-
-  String? getMessageCountBadge() {
-    // TODO: optimize? plpgsql function?
-    if (loggedIn()) {
-      supabase
-          .getCurrentUser()
-          .then((profile) => profile.getRooms().then((rooms) {
-                int count = 0;
-
-                for (var room in rooms) {
-                  if (room.unread()) {
-                    count++;
-                  }
-                }
-
-                return count > 0 ? count.toString() : null;
-              }));
-    }
-
-    return null;
   }
 
   @override
@@ -175,7 +164,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<PersistentBottomNavBarItem> generateNavBarItems() {
-    final unread = messageController.unread;
     return [
       _generateNavBarItem(
           title: 'Connect', icon: Icons.connect_without_contact),

@@ -6,8 +6,6 @@ import 'package:age_sync/utils/constants.dart';
 
 class MessageController {
   late final Stream<HashMap<String, List<Message>>> messageStream;
-  int unread = 0;
-  final List<Function> _listeners = [];
 
   MessageController() {
     messageStream = supabase
@@ -29,28 +27,5 @@ class MessageController {
 
           return messages;
         });
-
-    // update unread count
-    messageStream.listen((event) {
-      for (final room in event.values) {
-        unread = 0;
-
-        if (!room.first.read) {
-          unread++;
-        }
-      }
-
-      callListeners();
-    });
-  }
-
-  callListeners() {
-    for (final listener in _listeners) {
-      listener();
-    }
-  }
-
-  addListener(Function listener) {
-    _listeners.add(listener);
   }
 }
