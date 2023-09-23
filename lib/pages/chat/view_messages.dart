@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:age_sync/pages/chat/new_chat_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
-import 'package:age_sync/utils/message.dart';
-import 'package:age_sync/utils/room.dart';
+import 'package:age_sync/utils/chat/message.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart';
@@ -25,17 +26,47 @@ class ViewMessagesPage extends StatefulWidget {
   State<ViewMessagesPage> createState() => _ViewMessagesPageState();
 }
 
+class RoomModel {
+  final String roomId;
+  final Profile other;
+  final Message lastMessage;
+
+  RoomModel({
+    required this.roomId,
+    required this.other,
+    required this.lastMessage,
+  });
+}
+
 class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
-  late List<RoomMeta> _rooms;
+  final List<RoomModel> _rooms = [];
 
   @override
   onInit() async {
-    final profile = await supabase.getCurrentUser();
-    final rooms = await profile.getRooms();
+    Completer<bool> completer = Completer();
 
-    setState(() {
-      _rooms = rooms;
+    messageController.messageStream.listen((event) async {
+      for (final room in event.keys) {
+        _rooms.clear();
+
+        final map = await supabase
+            .from('room_participants')
+            .select('profile_id')
+            .eq('room_id', room)
+            .neq('profile_id', supabase.userId)
+            .single();
+
+        Profile other = await Profile.fromId(map['profile_id']);
+
+        _rooms.add(RoomModel(
+            roomId: room, other: other, lastMessage: event[room]!.first));
+
+        completer.complete(true);
+        setState(() {});
+      }
     });
+
+    await completer.future;
   }
 
   @override
@@ -56,14 +87,25 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
 
   @override
   Widget buildLoaded(BuildContext context) {
-    return ListView.separated(
+    if (_rooms.isEmpty) {
+      return const Center(
+        child: Text('No messages yet'),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: _rooms.length,
       itemBuilder: (context, index) {
         final room = _rooms[index];
 
-        return _MessageEntry(profile: room.other, lastText: room.lastMessage);
+        return Padding(
+          padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+          child: Card(
+              child: _MessageEntry(
+                  profile: room.other, lastText: room.lastMessage)),
+        );
       },
-      separatorBuilder: (context, index) => const Divider(),
-      itemCount: _rooms.length,
     );
   }
 }
@@ -115,7 +157,7 @@ class _MessageEntry extends StatelessWidget {
         ),
       ),
       onTap: () {
-        context.pushNamed(ChatPage.routeName, arguments: profile.id);
+        context.pushNamed(ChatPage.routeName, arguments: profile);
       },
       onLongPress: () {
         context.showMenu([
