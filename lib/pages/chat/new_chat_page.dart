@@ -76,7 +76,7 @@ class FriendEntry extends StatelessWidget {
           trailing: IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              context.pushNamed(ChatPage.routeName, arguments: profile.id);
+              context.pushNamed(ChatPage.routeName, arguments: profile);
             },
           )),
     );
