@@ -1,6 +1,6 @@
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
-import 'package:age_sync/utils/message.dart';
+import 'package:age_sync/utils/chat/message.dart';
 import 'package:age_sync/utils/profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
