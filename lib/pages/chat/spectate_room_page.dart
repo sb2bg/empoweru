@@ -1,6 +1,6 @@
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
-import 'package:age_sync/utils/message.dart';
+import 'package:age_sync/utils/chat/message.dart';
 import 'package:age_sync/utils/room.dart';
 import 'package:age_sync/widgets/chat_bubble.dart';
 import 'package:flutter/material.dart';
