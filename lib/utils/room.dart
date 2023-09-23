@@ -1,7 +1,7 @@
 import 'package:age_sync/utils/profile.dart';
 
 import 'constants.dart';
-import 'message.dart';
+import 'chat/message.dart';
 
 class Room {
   const Room({
