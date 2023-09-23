@@ -3,7 +3,7 @@ import 'package:age_sync/utils/task.dart';
 import 'package:age_sync/widgets/task_view.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/constants.dart';
+import '../../utils/constants.dart';
 import 'new_task_page.dart';
 
 class TaskPage extends StatefulWidget {
@@ -29,14 +29,37 @@ class _TaskPageState extends LoadingState<TaskPage> {
 
   @override
   Future<void> onInit() async {
+    if (!firstLoad) {
+      await taskController.reload();
+    }
+
+    taskController.addListener(() {
+      if (!mounted) return; // Prevent setState() if not mounted
+
+      setState(() {
+        _tasks = taskController.tasks;
+      });
+
+      filterTasks();
+    });
+
+    await taskController.future;
+
     final elder = (await supabase.getCurrentUser()).elder;
-    _tasks = await Task.getTasks(await supabase.getCurrentUser())
-      ..sort((a, b) => a.deadline.compareTo(b.deadline));
 
     setState(() {
+      _tasks = taskController.tasks;
       _filteredTasks = _tasks;
       _elder = elder;
     });
+  }
+
+  addTask(Task task) {
+    setState(() {
+      _tasks.add(task);
+    });
+
+    filterTasks();
   }
 
   filterTasks() {
@@ -72,7 +95,7 @@ class _TaskPageState extends LoadingState<TaskPage> {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                context.pushNamed(NewTaskPage.routeName, arguments: _tasks);
+                context.pushNamed(NewTaskPage.routeName);
               },
             )
         ],
@@ -119,14 +142,16 @@ class _TaskPageState extends LoadingState<TaskPage> {
             ],
           ),
         ),
-        ListView.builder(
-          shrinkWrap: true,
-          scrollDirection: Axis.vertical,
-          itemCount: _filteredTasks.length,
-          itemBuilder: (context, index) {
-            final task = _filteredTasks[index];
-            return TaskView(task: task);
-          },
+        Expanded(
+          child: ListView.builder(
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            itemCount: _filteredTasks.length,
+            itemBuilder: (context, index) {
+              final task = _filteredTasks[index];
+              return TaskView(task: task);
+            },
+          ),
         ),
       ],
     );
