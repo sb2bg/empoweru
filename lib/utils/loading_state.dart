@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool _loading = true;
   bool _error = false;
+  bool firstLoad = true;
 
   setLoading(bool loading) {
     setState(() {
@@ -68,6 +69,7 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
         ? scaffold
         : RefreshIndicator(
             onRefresh: () async {
+              firstLoad = false;
               await onInit();
             },
             edgeOffset: MediaQuery.of(context).padding.top,
