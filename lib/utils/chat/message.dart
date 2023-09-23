@@ -1,8 +1,9 @@
-import 'constants.dart';
+import '../constants.dart';
 
 class Message {
   Message({
     required this.id,
+    required this.roomId,
     required this.profileId,
     required this.content,
     required this.read,
@@ -11,6 +12,7 @@ class Message {
   });
 
   final String id;
+  final String roomId;
   final String profileId;
   final String content;
   final bool read;
@@ -20,6 +22,7 @@ class Message {
   Message.fromMap({
     required Map<String, dynamic> map,
   })  : id = map['id'],
+        roomId = map['room_id'],
         profileId = map['profile_id'],
         content = map['content'],
         read = map['read'],
@@ -31,7 +34,6 @@ class Message {
     return Message.fromMap(map: map);
   }
 
-  // TODO: throws if no messages
   static Future<Message?> lastMessageFromRoomId(String id) async {
     return await supabase
         .from('messages')
@@ -47,13 +49,13 @@ class Message {
     await supabase.from('messages').delete().eq('id', id);
   }
 
-  // TODO: RLS does not allow this yet
+  // TODO: function doesn't exist
   markRead() async {
-    await supabase.from('messages').update({'read': true}).eq('id', id);
+    await supabase.rpc('mark_message', params: {'mid': id, 'read': true});
   }
 
   markUnread() async {
-    await supabase.from('messages').update({'read': false}).eq('id', id);
+    await supabase.rpc('mark_message', params: {'mid': id, 'read': false});
   }
 
   static create(String user, String contents, String roomId) async {
