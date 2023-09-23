@@ -1,27 +1,24 @@
-import 'dart:async';
-
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:age_sync/widgets/chat_bubble.dart';
 import 'package:flutter/material.dart';
 
-import 'package:age_sync/utils/message.dart';
+import 'package:age_sync/utils/chat/message.dart';
 import 'package:age_sync/utils/profile.dart';
 
 class ChatPage extends StatefulWidget {
   static const routeName = '/chat';
 
-  const ChatPage({super.key, required this.otherId});
+  const ChatPage({super.key, required this.other});
 
-  final String otherId;
+  final Profile other;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends LoadingState<ChatPage> {
-  late final Stream<List<Message>> _messagesStream;
   late final Profile _me;
   late final Profile _other;
   late final String _roomId;
@@ -32,28 +29,14 @@ class _ChatPageState extends LoadingState<ChatPage> {
   @override
   onInit() async {
     _roomId = await supabase.rpc('create_new_room', params: {
-      'other_user_id': widget.otherId,
+      'other_user_id': widget.other.id,
     });
-
-    _messagesStream = supabase
-        .from('messages')
-        .stream(primaryKey: ['id'])
-        .eq('room_id', _roomId)
-        .order('created_at')
-        .map((maps) => maps.map((map) => Message.fromMap(map: map)).toList());
 
     await _loadProfiles();
   }
 
   _loadProfiles() async {
-    final map = await supabase
-        .from('room_participants')
-        .select('profile_id')
-        .eq('room_id', _roomId)
-        .neq('profile_id', supabase.userId)
-        .single();
-
-    _other = await Profile.fromId(map['profile_id']);
+    _other = widget.other;
     _me = await supabase.getCurrentUser();
   }
 
@@ -75,10 +58,10 @@ class _ChatPageState extends LoadingState<ChatPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: StreamBuilder(
-        stream: _messagesStream,
+        stream: messageController.messageStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final messages = snapshot.data ?? [];
+            List<Message> messages = snapshot.data?[_roomId] ?? [];
 
             return Column(
               children: [
