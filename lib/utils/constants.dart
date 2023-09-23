@@ -1,5 +1,8 @@
+import 'package:age_sync/utils/chat/message_controller.dart';
 import 'package:age_sync/utils/profile.dart';
+import 'package:age_sync/utils/task_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +20,8 @@ const defaultAvatarUrl =
 
 final supabase = Supabase.instance.client;
 late final SharedPreferences prefs;
+late final TaskController taskController;
+late final MessageController messageController;
 final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
 const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
@@ -25,8 +30,13 @@ const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
 const whiteMetaStyle = TextStyle(fontSize: 12, color: Colors.white);
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
+Brightness get deviceTheme =>
+    SchedulerBinding.instance.platformDispatcher.platformBrightness;
+
 enum PrefKeys {
-  newUser('new_user');
+  newUser('new_user'),
+  theme('theme'),
+  language('language');
 
   final String key;
 
@@ -75,6 +85,53 @@ extension Confirmation on BuildContext {
     );
 
     return future;
+  }
+
+  typeConfirmationDialog(
+      {required String title,
+      required String content,
+      required Function() onConfirm,
+      required String confirmText}) {
+    String? typed;
+
+    showDialog(
+      context: this,
+      builder: (context) => AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(content),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: 'Type "$confirmText" to confirm',
+                ),
+                onChanged: (value) {
+                  typed = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (confirmText.toLowerCase() == typed?.toLowerCase()) {
+                  onConfirm();
+                  context.pop();
+                } else {
+                  context.showErrorSnackBar(message: 'Incorrect text');
+                }
+              },
+              child: const Text('Confirm'),
+            ),
+          ]),
+    );
   }
 }
 
@@ -258,6 +315,7 @@ final themeData = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.white,
       foregroundColor: Colors.black,
+      textStyle: const TextStyle(color: Colors.black),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
