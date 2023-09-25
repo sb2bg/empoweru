@@ -43,30 +43,37 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
 
   @override
   onInit() async {
-    Completer<bool> completer = Completer();
+    if (firstLoad) {
+      Completer<bool> completer = Completer();
 
-    messageController.messageStream.listen((event) async {
-      for (final room in event.keys) {
+      messageController.messageStream.listen((event) async {
         _rooms.clear();
 
-        final map = await supabase
-            .from('room_participants')
-            .select('profile_id')
-            .eq('room_id', room)
-            .neq('profile_id', supabase.userId)
-            .single();
+        for (final room in event.keys) {
+          final map = await supabase
+              .from('room_participants')
+              .select('profile_id')
+              .eq('room_id', room)
+              .neq('profile_id', supabase.userId)
+              .single();
 
-        Profile other = await Profile.fromId(map['profile_id']);
+          Profile other = await Profile.fromId(map['profile_id']);
 
-        _rooms.add(RoomModel(
-            roomId: room, other: other, lastMessage: event[room]!.first));
+          _rooms.add(RoomModel(
+              roomId: room, other: other, lastMessage: event[room]!.first));
+        }
 
-        completer.complete(true);
+        if (!completer.isCompleted) {
+          completer.complete(true);
+        }
+
         setState(() {});
-      }
-    });
+      });
 
-    await completer.future;
+      await completer.future;
+    } else {
+      // TODO: reload realtime message stream?
+    }
   }
 
   @override

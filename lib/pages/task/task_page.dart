@@ -29,19 +29,19 @@ class _TaskPageState extends LoadingState<TaskPage> {
 
   @override
   Future<void> onInit() async {
-    if (!firstLoad) {
+    if (firstLoad) {
+      taskController.addListener(() {
+        if (!mounted) return; // Prevent setState() if not mounted
+
+        setState(() {
+          _tasks = taskController.tasks;
+        });
+
+        filterTasks();
+      });
+    } else {
       await taskController.reload();
     }
-
-    taskController.addListener(() {
-      if (!mounted) return; // Prevent setState() if not mounted
-
-      setState(() {
-        _tasks = taskController.tasks;
-      });
-
-      filterTasks();
-    });
 
     await taskController.future;
 

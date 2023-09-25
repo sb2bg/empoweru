@@ -32,7 +32,7 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
         title: const Text('Events'),
       );
 
-  List<Task> getEvents() {
+  List<Task> _getEvents() {
     _events = LinkedHashMap(
       equals: isSameDay,
       hashCode: (date) => date.day ^ date.month ^ date.year,
@@ -56,23 +56,24 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
   Future<void> onInit() async {
     _profile = await supabase.getCurrentUser();
 
-    if (!firstLoad) {
+    if (firstLoad) {
+      taskController.addListener(() {
+        if (!mounted) return; // Prevent setState() if not mounted
+
+        setState(() {
+          _getEvents();
+          _selectedTasks = getTasksForDay(_focusedDay);
+        });
+      });
+    } else {
       await taskController.reload();
     }
-
-    taskController.addListener(() {
-      if (!mounted) return; // Prevent setState() if not mounted
-
-      setState(() {
-        _selectedTasks = getTasksForDay(_focusedDay);
-      });
-    });
 
     await taskController.future;
 
     setState(() {
       _focusedDay = DateTime.now();
-      _selectedTasks = getEvents();
+      _selectedTasks = _getEvents();
     });
   }
 
