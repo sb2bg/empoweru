@@ -14,13 +14,12 @@ import 'package:age_sync/pages/log_in_page.dart';
 import 'package:age_sync/pages/task/new_task_page.dart';
 import 'package:age_sync/pages/task/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
-import 'package:age_sync/utils/chat/message_controller.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/profile.dart';
-import 'package:age_sync/utils/task_controller.dart';
 import 'package:age_sync/widgets/error_page.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,8 +34,10 @@ Future<void> main() async {
   );
 
   prefs = await SharedPreferences.getInstance();
-  taskController = TaskController();
-  messageController = MessageController();
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
 
   runApp(const MyApp());
 }
@@ -92,9 +93,33 @@ class _MyAppState extends State<MyApp> {
   int unread = 0;
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 
+    supabase.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+
+      if (event == AuthChangeEvent.signedOut) {
+        supabase.invalidateCache();
+      }
+
+      if (event == AuthChangeEvent.signedIn) {
+        loadControllers();
+        unreadUpdater();
+      }
+
+      setState(() {});
+      prefs.setBool(PrefKeys.newUser.key, false);
+    });
+  }
+
+  unreadUpdater() {
     messageController.messageStream.listen((event) {
       int count = 0;
 
@@ -107,17 +132,6 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         unread = count;
       });
-    });
-
-    supabase.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-
-      if (event == AuthChangeEvent.signedOut) {
-        supabase.invalidateCache();
-      }
-
-      setState(() {});
-      prefs.setBool(PrefKeys.newUser.key, false);
     });
   }
 
