@@ -44,8 +44,9 @@ class TaskController {
 
   reload() {
     loadTasks((tasks) {
-      tasks.clear();
+      this.tasks.clear();
       this.tasks.addAll(tasks);
+
       callListeners();
     });
   }
