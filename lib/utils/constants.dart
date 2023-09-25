@@ -20,8 +20,6 @@ const defaultAvatarUrl =
 
 final supabase = Supabase.instance.client;
 late final SharedPreferences prefs;
-late final TaskController taskController;
-late final MessageController messageController;
 final CustomRouteObserver navObserver = CustomRouteObserver();
 const preloader = Scaffold(body: Center(child: CircularProgressIndicator()));
 const titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
@@ -29,6 +27,22 @@ const subtitleStyle = TextStyle(fontSize: 16);
 const metaStyle = TextStyle(fontSize: 12, color: Colors.grey);
 const whiteMetaStyle = TextStyle(fontSize: 12, color: Colors.white);
 const unexpectedErrorMessage = 'Unexpected error occurred.';
+
+late final TaskController taskController;
+late final MessageController messageController;
+
+bool controllersLoaded = false;
+
+loadControllers() {
+  if (controllersLoaded) {
+    return;
+  }
+
+  taskController = TaskController();
+  messageController = MessageController();
+
+  controllersLoaded = true;
+}
 
 Brightness get deviceTheme =>
     SchedulerBinding.instance.platformDispatcher.platformBrightness;
