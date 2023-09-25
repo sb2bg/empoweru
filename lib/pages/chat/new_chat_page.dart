@@ -18,6 +18,9 @@ class _NewChatPageState extends LoadingState<NewChatPage> {
   final _friends = <Profile>[];
 
   @override
+  bool get disableRefresh => true;
+
+  @override
   onInit() async {
     final me = await supabase.getCurrentUser();
     _friends.addAll(await me.getFriends());
