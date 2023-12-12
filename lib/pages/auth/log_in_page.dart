@@ -1,12 +1,13 @@
+import 'package:age_sync/pages/auth/org_sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../supabase/auth/facebook.dart';
-import '../supabase/auth/google.dart';
-import '../utils/constants.dart';
-import 'email_log_in_page.dart';
-import 'email_sign_up_page.dart';
+import '../../supabase/auth/facebook.dart';
+import '../../supabase/auth/google.dart';
+import '../../utils/constants.dart';
+import '../auth/email_log_in_page.dart';
+import '../auth/email_sign_up_page.dart';
 
 enum LogInType {
   signUp('Sign up', LogInPage.signUpRouteName),
@@ -91,7 +92,7 @@ class _LogInPageState extends State<LogInPage> {
                 Text(_title,
                     style: const TextStyle(
                         fontSize: 30, fontWeight: FontWeight.bold)),
-                const Text('to continue to AgeSync'),
+                const Text('to continue to EmpowerU'),
                 const SizedBox(height: 16),
                 IntrinsicWidth(
                     child: Column(
@@ -100,15 +101,36 @@ class _LogInPageState extends State<LogInPage> {
                       ElevatedButton(
                         onPressed:
                             _isLoading ? null : () => _signIn(signInWithGoogle),
-                        child: Text(
-                            _isLoading ? 'Loading' : '$_title with Google'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Image.asset('assets/images/google.png', height: 20),
+                            SizedBox(
+                              width: 150,
+                              child: Text(_isLoading
+                                  ? 'Loading'
+                                  : '$_title with Google'),
+                            ),
+                          ],
+                        ),
                       ),
                       ElevatedButton(
                         onPressed: _isLoading
                             ? null
                             : () => _signIn(signInWithFacebook),
-                        child: Text(
-                            _isLoading ? 'Loading' : '$_title with Facebook'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Image.asset('assets/images/facebook.png',
+                                height: 20),
+                            SizedBox(
+                              width: 150,
+                              child: Text(_isLoading
+                                  ? 'Loading'
+                                  : '$_title with Facebook'),
+                            ),
+                          ],
+                        ),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -118,10 +140,20 @@ class _LogInPageState extends State<LogInPage> {
                             widget.type == LogInType.signUp
                                 ? EmailSignUpPage.routeName
                                 : EmailLogInPage.routeName),
-                        child:
-                            Text(_isLoading ? 'Loading' : '$_title with Email'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            const Icon(Icons.email),
+                            SizedBox(
+                                width: 150,
+                                child: Text(_isLoading
+                                    ? 'Loading'
+                                    : '$_title with Email')),
+                          ],
+                        ),
                       ),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                               widget.type == LogInType.signUp
@@ -138,7 +170,19 @@ class _LogInPageState extends State<LogInPage> {
                             ),
                           )
                         ],
-                      )
+                      ),
+                      TextButton.icon(
+                          onPressed: () {
+                            context.pushNamed(OrgSignUpPage.routeName);
+                          },
+                          icon: Icon(
+                            Icons.business_center,
+                            color: Colors.grey[600],
+                          ),
+                          label: Text('Sign up as an organization',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                              )))
                     ])),
                 SizedBox(height: MediaQuery.of(context).padding.bottom),
               ],

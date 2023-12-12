@@ -1,4 +1,4 @@
-import 'package:age_sync/pages/email_sign_up_page.dart';
+import 'package:age_sync/pages/auth/email_sign_up_page.dart';
 import 'package:age_sync/supabase/auth/email.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/widgets/password_text_field.dart';
