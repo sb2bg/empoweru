@@ -1,20 +1,24 @@
 import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/admin/admin_page.dart';
+import 'package:age_sync/pages/approve_org_page.dart';
+import 'package:age_sync/pages/auth/org_sign_up_page.dart';
 import 'package:age_sync/pages/opportunity_page.dart';
+import 'package:age_sync/pages/org_dashboard.dart';
 import 'package:age_sync/pages/settings_page.dart';
 import 'package:age_sync/pages/task/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
 import 'package:age_sync/pages/chat/spectate_room_page.dart';
 import 'package:age_sync/pages/chat/view_messages.dart';
-import 'package:age_sync/pages/email_log_in_page.dart';
-import 'package:age_sync/pages/email_sign_up_page.dart';
+import 'package:age_sync/pages/auth/email_log_in_page.dart';
+import 'package:age_sync/pages/auth/email_sign_up_page.dart';
 import 'package:age_sync/pages/friend_page.dart';
 import 'package:age_sync/pages/intro_page.dart';
-import 'package:age_sync/pages/log_in_page.dart';
+import 'package:age_sync/pages/auth/log_in_page.dart';
 import 'package:age_sync/pages/task/new_task_page.dart';
 import 'package:age_sync/pages/task/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/utils/organization.dart';
 import 'package:age_sync/utils/profile.dart';
 import 'package:age_sync/widgets/error_page.dart';
 import 'package:flutter/rendering.dart';
@@ -73,6 +77,10 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
             SpectateChatRoomPage(roomId: settings.arguments as String),
         OpportunityPage.routeName: (_) => const OpportunityPage(),
         SettingsPage.routeName: (_) => const SettingsPage(),
+        OrgSignUpPage.routeName: (_) => const OrgSignUpPage(),
+        ApproveOrgPage.routeName: (_) =>
+            ApproveOrgPage(org: settings.arguments as Organization),
+        OrganizationDashboard.routeName: (_) => const OrganizationDashboard(),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
@@ -179,8 +187,7 @@ class _MyAppState extends State<MyApp> {
 
   List<PersistentBottomNavBarItem> generateNavBarItems() {
     return [
-      _generateNavBarItem(
-          title: 'Connect', icon: Icons.connect_without_contact),
+      _generateNavBarItem(title: 'Skill Building', icon: Icons.home),
       _generateNavBarItem(
           title: 'Messages',
           icon: Icons.message,
