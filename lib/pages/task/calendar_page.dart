@@ -56,6 +56,8 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
   Future<void> onInit() async {
     _profile = await supabase.getCurrentUser();
 
+    await taskController.future;
+
     if (firstLoad) {
       taskController.addListener(() {
         if (!mounted) return; // Prevent setState() if not mounted
@@ -68,8 +70,6 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
     } else {
       await taskController.reload();
     }
-
-    await taskController.future;
 
     setState(() {
       _focusedDay = DateTime.now();
