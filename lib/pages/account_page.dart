@@ -1,4 +1,5 @@
 import 'package:age_sync/pages/admin/admin_page.dart';
+import 'package:age_sync/pages/org_dashboard.dart';
 import 'package:age_sync/pages/settings_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -132,6 +133,12 @@ class _AccountPageState extends LoadingState<AccountPage> {
                   IconButton(
                     icon: const Icon(Icons.admin_panel_settings),
                     onPressed: () => context.pushNamed(AdminPage.routeName),
+                  )
+                else if (_profile.elder)
+                  IconButton(
+                    icon: const Icon(Icons.dashboard),
+                    onPressed: () =>
+                        context.pushNamed(OrganizationDashboard.routeName),
                   ),
               ],
             ),
@@ -161,7 +168,43 @@ class _AccountPageState extends LoadingState<AccountPage> {
           ListTile(
             leading: const Icon(Icons.feedback_outlined),
             title: const Text('Feedback'),
-            onTap: () => print('TODO'),
+            onTap: () => showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: const Text('Feedback'),
+                      content: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                              'Have a suggestion or found a bug? Let us know!'),
+                          SizedBox(height: 16),
+                          TextField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: 'Feedback',
+                            ),
+                            // maxLines: 5, TODO: this makes the hintText weird
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            context.pop();
+
+                            context.showSnackBar(
+                                message:
+                                    'Feedback submitted. Thank you for your help!',
+                                backgroundColor: Colors.green);
+                          },
+                          child: const Text('Submit'),
+                        ),
+                      ],
+                    )),
           ),
           const Divider(),
           ListTile(
