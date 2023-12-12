@@ -63,6 +63,7 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
               roomId: room, other: other, lastMessage: event[room]!.first));
         }
 
+        // shouldn't happen, just to prevent errors
         if (!completer.isCompleted) {
           completer.complete(true);
         }
