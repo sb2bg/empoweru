@@ -1,7 +1,9 @@
+import "package:age_sync/pages/approve_org_page.dart";
 import "package:age_sync/pages/chat/spectate_room_page.dart";
 import "package:age_sync/pages/view_account_page.dart";
 import "package:age_sync/utils/constants.dart";
 import "package:age_sync/utils/loading_state.dart";
+import "package:age_sync/utils/organization.dart";
 import "package:age_sync/utils/profile.dart";
 import "package:age_sync/utils/room.dart";
 import "package:age_sync/utils/task.dart";
@@ -24,12 +26,16 @@ class _AdminPageState extends LoadingState<AdminPage>
   late List<Profile> _profiles;
   late List<Task> _tasks;
   late List<RoomMeta> _rooms;
+  late List<Organization> _organizations;
+  List<Organization> _filteredOrgs = [];
+  String _filter = "All";
 
   static final _tabs = [
-    const Tab(icon: Icon(Icons.person)),
-    const Tab(icon: Icon(Icons.task)),
-    const Tab(icon: Icon(Icons.message)),
-    const Tab(icon: Icon(Icons.report)),
+    const Tab(icon: Icon(Icons.person), text: "Profiles"),
+    const Tab(icon: Icon(Icons.task), text: "Tasks"),
+    const Tab(icon: Icon(Icons.message), text: "Messages"),
+    const Tab(icon: Icon(Icons.business), text: "Organizations"),
+    const Tab(icon: Icon(Icons.report), text: "Reports"),
   ];
 
   @override
@@ -64,6 +70,27 @@ class _AdminPageState extends LoadingState<AdminPage>
         length: _tabs.length,
         vsync: this,
       );
+      _organizations = [
+        Organization(
+            name: "Houston Food Bank",
+            verified: true,
+            id: "1",
+            logo:
+                "https://pbs.twimg.com/profile_images/914867909880451079/QZL0POL__400x400.jpg",
+            email: "Receiving@houstonfoodbank.org",
+            phone: "713-547-8660",
+            address: "535 Portwall St",
+            city: "Houston",
+            mission: "Leading the fight against hunger.",
+            website: "https://www.houstonfoodbank.org/",
+            facebook: null,
+            instagram: null,
+            twitter: "https://twitter.com/houstonfoodbank",
+            state: "TX",
+            type: "Non-profit",
+            zip: "77029")
+      ];
+      _filteredOrgs = _organizations;
     });
   }
 
@@ -201,7 +228,120 @@ class _AdminPageState extends LoadingState<AdminPage>
                   )),
                 );
               }),
-          Center(child: Text("Reports")),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(
+                  children: [
+                    const Text('Filter by '),
+                    const SizedBox(width: 10),
+                    DropdownButton(
+                      value: _filter,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'All',
+                          child: Text('All'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Pending',
+                          child: Text('Pending'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Approved',
+                          child: Text('Approved'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == "All") {
+                          _filteredOrgs = _organizations;
+                        } else if (value == "Pending") {
+                          _filteredOrgs = _organizations
+                              .where((org) => !org.verified)
+                              .toList();
+                        } else if (value == "Approved") {
+                          _filteredOrgs = _organizations
+                              .where((org) => org.verified)
+                              .toList();
+                        }
+
+                        setState(() {
+                          _filter = value.toString();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _filteredOrgs.length,
+                  itemBuilder: (context, index) {
+                    final org = _filteredOrgs[index];
+
+                    return Card(
+                        child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: CachedNetworkImageProvider(
+                          org.logo,
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          Text(org.name),
+                          if (org.verified)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Icon(
+                                Icons.verified,
+                                color: Colors.green,
+                              ),
+                            )
+                          else if (!org.verified)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.not_interested,
+                                    color: Colors.amber,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text("Pending approval",
+                                      style: TextStyle(color: Colors.amber))
+                                ],
+                              ),
+                            )
+                        ],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(org.mission),
+                          if (!org.verified)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      await context.pushNamed(
+                                          ApproveOrgPage.routeName,
+                                          arguments: org);
+
+                                      setState(() {});
+                                    },
+                                    icon: const Icon(Icons.check),
+                                    label: const Text("Approve")),
+                              ),
+                            )
+                        ],
+                      ),
+                    ));
+                  }),
+            ],
+          ),
+          const Center(child: Text("Reports")),
         ],
       ),
     );
