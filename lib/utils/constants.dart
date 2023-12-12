@@ -63,7 +63,7 @@ showReportThankYouDialog(BuildContext context) {
       builder: (context) => AlertDialog(
             title: const Text('Report Received'),
             content: const Text(
-                'We will review this message and take appropriate action. Thank you for helping us keep AgeSync safe.'),
+                'We will review this message and take appropriate action. Thank you for helping us keep EmpowerU safe.'),
             actions: [
               TextButton(
                 onPressed: () => context.pop(),
@@ -168,8 +168,8 @@ extension ShowSnackBar on BuildContext {
 extension Navigate on BuildContext {
   NavigatorState get navigator => Navigator.of(this);
 
-  void pushNamed(String routeName,
-      {Object? arguments, bool withNavBar = false}) {
+  Future<void> pushNamed(String routeName,
+      {Object? arguments, bool withNavBar = false}) async {
     Route? previousRoute = navObserver.previousRoute;
     RouteSettings routeSettings =
         RouteSettings(arguments: arguments, name: routeName);
@@ -178,7 +178,7 @@ extension Navigate on BuildContext {
     Widget widget = builder(this);
 
     if (!navigator.canPop() || previousRoute == null) {
-      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
+      await PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
           screen: widget, settings: routeSettings, withNavBar: withNavBar);
       navObserver.push(CustomRoute(settings: routeSettings));
       return;
@@ -187,7 +187,7 @@ extension Navigate on BuildContext {
     if (previousRoute.settings.name == routeName) {
       pop();
     } else {
-      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
+      await PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
           screen: widget, settings: routeSettings, withNavBar: withNavBar);
       navObserver.push(CustomRoute(settings: routeSettings));
     }
@@ -317,6 +317,10 @@ extension CurrentUser on SupabaseClient {
 
     return currentUser.id;
   }
+}
+
+extension BottomPadding on BuildContext {
+  double get bottomPadding => MediaQuery.of(this).padding.bottom;
 }
 
 final themeData = ThemeData(
