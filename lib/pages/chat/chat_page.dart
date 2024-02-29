@@ -22,6 +22,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
   late final Profile _me;
   late final Profile _other;
   late final String _roomId;
+  late List<Message> _optimisticMessages = [];
 
   @override
   bool get disableRefresh => true;
@@ -30,6 +31,14 @@ class _ChatPageState extends LoadingState<ChatPage> {
   onInit() async {
     _roomId = await supabase.rpc('create_new_room', params: {
       'other_user_id': widget.other.id,
+    });
+
+    streamControllers.messageStream.listen((event) {
+      final messages = event[_roomId] ?? [];
+
+      setState(() {
+        _optimisticMessages = messages;
+      });
     });
 
     await _loadProfiles();
@@ -56,47 +65,34 @@ class _ChatPageState extends LoadingState<ChatPage> {
   @override
   Widget buildLoaded(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: StreamBuilder(
-        stream: messageController.messageStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Message> messages = snapshot.data?[_roomId] ?? [];
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            Expanded(
+              child: _optimisticMessages.isEmpty
+                  ? const Center(
+                      child: Text('Say hello',
+                          style: TextStyle(color: Colors.grey)),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      itemCount: _optimisticMessages.length,
+                      itemBuilder: (context, index) {
+                        final message = _optimisticMessages[index];
 
-            return Column(
-              children: [
-                Expanded(
-                  child: messages.isEmpty
-                      ? const Center(
-                          child: Text('Say hello',
-                              style: TextStyle(color: Colors.grey)),
-                        )
-                      : ListView.builder(
-                          reverse: true,
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final message = messages[index];
-
-                            return ChatBubble(
-                              message: message,
-                              profile: message.isMine ? _me : _other,
-                            );
-                          },
-                        ),
-                ),
-                _MessageBar(roomId: _roomId),
-              ],
-            );
-          } else {
-            return preloader;
-          }
-        },
-      ),
-    );
+                        return ChatBubble(
+                          message: message,
+                          profile: message.isMine ? _me : _other,
+                        );
+                      },
+                    ),
+            ),
+            _MessageBar(roomId: _roomId),
+          ],
+        ));
   }
 }
 
-/// Set of widget that contains TextField and Button to submit message
 class _MessageBar extends StatefulWidget {
   const _MessageBar({required this.roomId});
 
