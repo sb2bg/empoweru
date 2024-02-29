@@ -29,7 +29,7 @@ class ViewMessagesPage extends StatefulWidget {
 class RoomModel {
   final String roomId;
   final Profile other;
-  final Message lastMessage;
+  Message? lastMessage;
 
   RoomModel({
     required this.roomId,
@@ -46,21 +46,33 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
     if (firstLoad) {
       Completer<bool> completer = Completer();
 
-      messageController.messageStream.listen((event) async {
+      streamControllers.messageStream.listen((event) async {
+        for (final room in _rooms) {
+          room.lastMessage = event[room.roomId]?.first;
+        }
+
+        if (mounted) {
+          setState(() {});
+        }
+      });
+
+      streamControllers.roomStream.listen((event) async {
         _rooms.clear();
 
-        for (final room in event.keys) {
+        for (final room in event) {
           final map = await supabase
               .from('room_participants')
               .select('profile_id')
-              .eq('room_id', room)
+              .eq('room_id', room.id)
               .neq('profile_id', supabase.userId)
               .single();
 
           Profile other = await Profile.fromId(map['profile_id']);
 
+          final lastMessage = await Message.lastMessageFromRoomId(room.id);
+
           _rooms.add(RoomModel(
-              roomId: room, other: other, lastMessage: event[room]!.first));
+              roomId: room.id, other: other, lastMessage: lastMessage));
         }
 
         // shouldn't happen, just to prevent errors
@@ -68,7 +80,9 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
           completer.complete(true);
         }
 
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
 
       await completer.future;
@@ -147,18 +161,20 @@ class _MessageEntry extends StatelessWidget {
         ),
         subtitle: Row(
           children: [
-            Text(lastText?.content ?? 'Click to chat with ${profile.name}',
-                maxLines: 1,
+            Expanded(
+              child: Text(
+                lastText?.content ?? 'Click to chat with ${profile.name}',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: lastText?.unread() ?? true
-                        ? Colors.white
-                        : Colors.grey)),
-            const Spacer(),
+                  color:
+                      lastText?.unread() ?? true ? Colors.white : Colors.grey,
+                ),
+              ),
+            ),
             Text(
               lastText != null
                   ? format(lastText!.createdAt, locale: 'en_short')
-                  : 'TODO', // FIXME
+                  : '',
               style: const TextStyle(color: Colors.grey),
             )
           ],
