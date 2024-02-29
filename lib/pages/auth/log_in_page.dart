@@ -173,6 +173,11 @@ class _LogInPageState extends State<LogInPage> {
                       ),
                       TextButton.icon(
                           onPressed: () {
+                            if (!OrgSignUpPage.beta) {
+                              context.showIncompleteDialog();
+                              return;
+                            }
+
                             context.pushNamed(OrgSignUpPage.routeName);
                           },
                           icon: Icon(
