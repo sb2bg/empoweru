@@ -2,7 +2,7 @@ import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/pages/approve_org_page.dart';
 import 'package:age_sync/pages/auth/org_sign_up_page.dart';
-import 'package:age_sync/pages/opportunity_page.dart';
+import 'package:age_sync/pages/learning_page.dart';
 import 'package:age_sync/pages/org_dashboard.dart';
 import 'package:age_sync/pages/settings_page.dart';
 import 'package:age_sync/pages/task/calendar_page.dart';
@@ -128,7 +128,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   unreadUpdater() {
-    messageController.messageStream.listen((event) {
+    streamControllers.messageStream.listen((event) {
       int count = 0;
 
       for (final room in event.values) {
@@ -187,7 +187,7 @@ class _MyAppState extends State<MyApp> {
 
   List<PersistentBottomNavBarItem> generateNavBarItems() {
     return [
-      _generateNavBarItem(title: 'Skill Building', icon: Icons.home),
+      _generateNavBarItem(title: 'Learning', icon: Icons.school),
       _generateNavBarItem(
           title: 'Messages',
           icon: Icons.message,
