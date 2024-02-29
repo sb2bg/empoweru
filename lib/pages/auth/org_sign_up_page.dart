@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class OrgSignUpPage extends StatefulWidget {
   static const routeName = '/org-sign-up';
+  static const beta = true;
 
   const OrgSignUpPage({super.key});
 
