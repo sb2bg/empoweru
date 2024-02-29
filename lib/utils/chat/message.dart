@@ -75,4 +75,9 @@ class Message {
   bool unread() {
     return !read && !isMine;
   }
+
+  @override
+  String toString() {
+    return 'Message{id: $id, roomId: $roomId, profileId: $profileId, content: $content, read: $read, createdAt: $createdAt, isMine: $isMine}';
+  }
 }
