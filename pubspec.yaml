@@ -39,7 +39,7 @@ dependencies:
   flutter_appauth: ^6.0.0
   crypto: ^3.0.3
   timeago: ^3.5.0
-  cached_network_image: ^3.2.3
+  cached_network_image: ^3.3.1
   image_picker: ^1.0.4
   persistent_bottom_nav_bar: ^5.0.2
   loader_overlay: ^2.3.0
@@ -48,6 +48,7 @@ dependencies:
   badges: ^3.1.2
   shared_preferences: ^2.2.1
   youtube_player_flutter: ^8.1.2
+  supabase: ^1.11.11
 
 dev_dependencies:
   flutter_test:
