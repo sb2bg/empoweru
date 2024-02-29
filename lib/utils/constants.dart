@@ -1,4 +1,4 @@
-import 'package:age_sync/utils/chat/message_controller.dart';
+import 'package:age_sync/utils/stream_controllers.dart';
 import 'package:age_sync/utils/profile.dart';
 import 'package:age_sync/utils/task_controller.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ const whiteMetaStyle = TextStyle(fontSize: 12, color: Colors.white);
 const unexpectedErrorMessage = 'Unexpected error occurred.';
 
 late final TaskController taskController;
-late final MessageController messageController;
+late final StreamControllers streamControllers;
 
 bool controllersLoaded = false;
 
@@ -39,7 +39,7 @@ loadControllers() {
   }
 
   taskController = TaskController();
-  messageController = MessageController();
+  streamControllers = StreamControllers();
 
   controllersLoaded = true;
 }
@@ -57,20 +57,105 @@ enum PrefKeys {
   const PrefKeys(this.key);
 }
 
-showReportThankYouDialog(BuildContext context) {
-  showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: const Text('Report Received'),
-            content: const Text(
-                'We will review this message and take appropriate action. Thank you for helping us keep EmpowerU safe.'),
-            actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child: const Text('OK'),
+enum ReportType {
+  spam,
+  inappropriate,
+  other,
+}
+
+showReportThankYouDialog(BuildContext context) async {
+  bool reported = false;
+
+  final result = await showDialog(
+    context: context,
+    builder: (context) {
+      ReportType type = ReportType.spam;
+      TextEditingController controller = TextEditingController();
+
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Report'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile(
+                title: const Text('Spam'),
+                value: ReportType.spam,
+                groupValue: type,
+                onChanged: (value) {
+                  setState(() {
+                    type = ReportType.spam;
+                  });
+                },
+              ),
+              RadioListTile(
+                title: const Text('Inappropriate'),
+                value: ReportType.inappropriate,
+                groupValue: type,
+                onChanged: (value) {
+                  setState(() {
+                    type = ReportType.inappropriate;
+                  });
+                },
+              ),
+              RadioListTile(
+                title: const Text('Other'),
+                value: ReportType.other,
+                groupValue: type,
+                onChanged: (value) {
+                  setState(() {
+                    type = ReportType.other;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Additional details',
+                ),
               ),
             ],
-          ));
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                reported = false;
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text);
+                reported = true;
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      });
+    },
+  );
+
+  print(result); // TODO: send report
+
+  if (reported && context.mounted) {
+    await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Report Received'),
+              content: const Text(
+                  'We will review this report and take appropriate action. Thank you for helping us keep EmpowerU safe.'),
+              actions: [
+                TextButton(
+                  onPressed: () => context.pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ));
+  }
 }
 
 extension Confirmation on BuildContext {
@@ -270,6 +355,23 @@ extension Show on BuildContext {
               context.pop();
             },
             child: Text(confirmText ?? 'Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  showIncompleteDialog() {
+    showDialog(
+      context: this,
+      builder: (context) => AlertDialog(
+        title: const Text('Beta'),
+        content: const Text(
+            'This feature is still in development and is only available to select users. Please check back later.'),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('OK'),
           ),
         ],
       ),
