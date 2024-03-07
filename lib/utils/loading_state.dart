@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/widgets/error_page.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +8,7 @@ import 'package:flutter/material.dart';
 abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool _loading = true;
   bool _error = false;
-  bool firstLoad = true;
+  final List<StreamSubscription> subscriptions = [];
 
   setLoading(bool loading) {
     setState(() {
@@ -22,6 +24,8 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   }
 
   _initStateLogic() {
+    clearSubscriptions(); // clean up old subscriptions if we are reloading
+
     final start = DateTime.now();
 
     context.tryDatabaseAsync(
@@ -41,6 +45,18 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   }
 
   afterInit() {}
+
+  @override
+  void dispose() {
+    clearSubscriptions();
+    super.dispose();
+  }
+
+  void clearSubscriptions() {
+    for (final subscription in subscriptions) {
+      subscription.cancel();
+    }
+  }
 
   Future<void> onInit();
   AppBar? get constAppBar => null;
@@ -69,7 +85,6 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
         ? scaffold
         : RefreshIndicator(
             onRefresh: () async {
-              firstLoad = false;
               await onInit();
             },
             edgeOffset: MediaQuery.of(context).padding.top,

@@ -38,57 +38,75 @@ class RoomModel {
   });
 }
 
+enum SortBy {
+  createdAt,
+  unread,
+}
+
 class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
   final List<RoomModel> _rooms = [];
+  SortBy _sortBy = SortBy.createdAt;
 
   @override
   onInit() async {
-    if (firstLoad) {
-      Completer<bool> completer = Completer();
+    Completer<bool> roomsLoaded = Completer();
 
-      streamControllers.messageStream.listen((event) async {
-        for (final room in _rooms) {
+    subscriptions.add(streamControllers.messageStream.listen((event) async {
+      for (final room in _rooms) {
+        setState(() {
           room.lastMessage = event[room.roomId]?.first;
-        }
+        });
+      }
+    }));
 
-        if (mounted) {
-          setState(() {});
+    subscriptions.add(streamControllers.roomStream.listen((event) async {
+      _rooms.clear();
+
+      for (final room in event) {
+        final map = await supabase
+            .from('room_participants')
+            .select('profile_id')
+            .eq('room_id', room.room.id)
+            .neq('profile_id', supabase.userId)
+            .single();
+
+        Profile other = await Profile.fromId(map['profile_id']);
+        final lastMessage = await Message.lastMessageFromRoomId(room.room.id);
+
+        _rooms.add(RoomModel(
+            roomId: room.room.id, other: other, lastMessage: lastMessage));
+
+        roomsLoaded.complete(true);
+      }
+
+      _rooms.sort((a, b) {
+        final aLastMessageUnread = a.lastMessage?.unread ?? false;
+        final bLastMessageUnread = b.lastMessage?.unread ?? false;
+
+        // we want rooms with no messages to be at the bottom
+        final aLastMessageCreatedAt =
+            a.lastMessage?.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0);
+        final bLastMessageCreatedAt =
+            b.lastMessage?.createdAt ?? DateTime.fromMicrosecondsSinceEpoch(0);
+
+        if (_sortBy == SortBy.createdAt) {
+          if (aLastMessageUnread != bLastMessageUnread) {
+            return aLastMessageUnread ? -1 : 1;
+          }
+          return aLastMessageCreatedAt.compareTo(bLastMessageCreatedAt);
+        } else {
+          return aLastMessageCreatedAt.compareTo(bLastMessageCreatedAt);
         }
       });
 
-      streamControllers.roomStream.listen((event) async {
-        _rooms.clear();
+      if (!roomsLoaded.isCompleted) {
+        roomsLoaded.complete(true);
+      }
 
-        for (final room in event) {
-          final map = await supabase
-              .from('room_participants')
-              .select('profile_id')
-              .eq('room_id', room.id)
-              .neq('profile_id', supabase.userId)
-              .single();
+      setState(() {});
+    }));
 
-          Profile other = await Profile.fromId(map['profile_id']);
-
-          final lastMessage = await Message.lastMessageFromRoomId(room.id);
-
-          _rooms.add(RoomModel(
-              roomId: room.id, other: other, lastMessage: lastMessage));
-        }
-
-        // shouldn't happen, just to prevent errors
-        if (!completer.isCompleted) {
-          completer.complete(true);
-        }
-
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
-      await completer.future;
-    } else {
-      // TODO: reload realtime message stream?
-    }
+    await roomsLoaded.future;
   }
 
   @override
@@ -147,7 +165,7 @@ class _MessageEntry extends StatelessWidget {
         ),
         title: Row(
           children: [
-            lastText?.unread() ?? true
+            lastText?.unread ?? true
                 ? Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: CircleAvatar(
@@ -166,8 +184,7 @@ class _MessageEntry extends StatelessWidget {
                 lastText?.content ?? 'Click to chat with ${profile.name}',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color:
-                      lastText?.unread() ?? true ? Colors.white : Colors.grey,
+                  color: lastText?.unread ?? true ? Colors.white : Colors.grey,
                 ),
               ),
             ),

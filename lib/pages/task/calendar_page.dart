@@ -32,14 +32,14 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
         title: const Text('Events'),
       );
 
-  List<Task> _getEvents() {
+  List<Task> _getEvents(List<Task> tasks) {
     _events = LinkedHashMap(
       equals: isSameDay,
       hashCode: (date) => date.day ^ date.month ^ date.year,
     );
 
     _events.addAll(
-      taskController.tasks.fold(
+      tasks.fold(
         <DateTime, List<Task>>{},
         (map, task) {
           final date = task.deadline;
@@ -56,24 +56,18 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
   Future<void> onInit() async {
     _profile = await supabase.getCurrentUser();
 
-    await taskController.future;
+    await taskController.ready;
 
-    if (firstLoad) {
-      taskController.addListener(() {
-        if (!mounted) return; // Prevent setState() if not mounted
-
-        setState(() {
-          _getEvents();
-          _selectedTasks = getTasksForDay(_focusedDay);
-        });
+    subscriptions.add(taskController.listen((tasks) {
+      setState(() {
+        _getEvents(tasks);
+        _selectedTasks = getTasksForDay(_focusedDay);
       });
-    } else {
-      await taskController.reload();
-    }
+    }));
 
     setState(() {
       _focusedDay = DateTime.now();
-      _selectedTasks = _getEvents();
+      // _selectedTasks = _getEvents();
     });
   }
 
@@ -148,7 +142,7 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
         ),
         const SizedBox(height: 16),
         const Divider(),
-        if (_profile.elder)
+        if (_profile.organization)
           Column(
             children: [
               ListTile(

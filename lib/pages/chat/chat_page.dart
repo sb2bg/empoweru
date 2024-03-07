@@ -33,13 +33,17 @@ class _ChatPageState extends LoadingState<ChatPage> {
       'other_user_id': widget.other.id,
     });
 
-    streamControllers.messageStream.listen((event) {
+    await supabase.rpc('mark_messages_as_read', params: {
+      '_room_id': _roomId,
+    });
+
+    subscriptions.add(streamControllers.messageStream.listen((event) {
       final messages = event[_roomId] ?? [];
 
       setState(() {
         _optimisticMessages = messages;
       });
-    });
+    }));
 
     await _loadProfiles();
   }

@@ -24,33 +24,26 @@ enum Filter {
 class _TaskPageState extends LoadingState<TaskPage> {
   late List<Task> _tasks;
   late List<Task> _filteredTasks;
-  late bool _elder;
+  late bool _isOrganization;
   Filter _filter = Filter.all;
 
   @override
   Future<void> onInit() async {
-    if (firstLoad) {
-      taskController.addListener(() {
-        if (!mounted) return; // Prevent setState() if not mounted
+    await taskController.ready;
 
-        setState(() {
-          _tasks = taskController.tasks;
-        });
-
-        filterTasks();
+    subscriptions.add(taskController.listen((tasks) {
+      setState(() {
+        _tasks = tasks;
       });
-    } else {
-      await taskController.reload();
-    }
 
-    await taskController.future;
+      filterTasks();
+    }));
 
-    final elder = (await supabase.getCurrentUser()).elder;
+    final isOrganization = (await supabase.getCurrentUser()).organization;
 
     setState(() {
-      _tasks = taskController.tasks;
       _filteredTasks = _tasks;
-      _elder = elder;
+      _isOrganization = isOrganization;
     });
   }
 
@@ -91,7 +84,7 @@ class _TaskPageState extends LoadingState<TaskPage> {
   get loadedAppBar => AppBar(
         title: Text('Tasks (${_tasks.length})'),
         actions: [
-          if (_elder)
+          if (_isOrganization)
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
