@@ -129,13 +129,13 @@ class _AdminPageState extends LoadingState<AdminPage>
                     subtitle: Text(
                         profile.admin
                             ? "Admin"
-                            : profile.elder
-                                ? "Elder"
+                            : profile.organization
+                                ? "Organization"
                                 : "Volunteer",
                         style: TextStyle(
                             color: profile.admin
                                 ? Colors.red
-                                : profile.elder
+                                : profile.organization
                                     ? Colors.blue
                                     : Colors.green)),
                     trailing: IconButton(

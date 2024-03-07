@@ -9,25 +9,22 @@ class Profile {
     required this.id,
     required this.name,
     required this.avatarUrl,
-    required this.elder,
+    required this.organization,
     required this.admin,
   });
 
   final String id;
   final String name;
   final String avatarUrl;
-  final bool elder;
+  final bool organization;
   final bool admin;
 
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
         name = map['name'],
         avatarUrl = map['avatar_url'],
-        elder = isElder(DateTime.parse(map['birth_date'])),
+        organization = map['organization'],
         admin = map['admin'];
-
-  static bool isElder(DateTime birthDate) =>
-      DateTime.now().year - birthDate.year >= 65;
 
   static Future<Profile> fromId(String uuid) async {
     if (uuid == supabase.userId) {

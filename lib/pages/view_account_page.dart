@@ -96,25 +96,25 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
                               await updateFriendStatus(_profile.addFriend);
                             },
                             icon: const Icon(Icons.person_add),
-                            label: const Text('Send friend request')),
+                            label: const Text('Send organization request')),
                         FriendStatus.pendingSent => TextButton.icon(
                             onPressed: () async {
                               await updateFriendStatus(_profile.removeFriend);
                             },
                             icon: const Icon(Icons.person_add_disabled),
-                            label: const Text('Cancel friend request')),
+                            label: const Text('Cancel organization request')),
                         FriendStatus.pendingReceived => TextButton.icon(
                             onPressed: () async {
                               await updateFriendStatus(_profile.addFriend);
                             },
                             icon: const Icon(Icons.person_add),
-                            label: const Text('Accept friend request')),
+                            label: const Text('Accept organization request')),
                         FriendStatus.friends => TextButton.icon(
                             onPressed: () async {
                               await updateFriendStatus(_profile.removeFriend);
                             },
                             icon: const Icon(Icons.person_remove),
-                            label: const Text('Remove friend')),
+                            label: const Text('Leave organization')),
                       },
                       _friendStatus == FriendStatus.friends
                           ? TextButton.icon(
@@ -122,7 +122,7 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
                               label: const Text('Send Message'),
                               onPressed: () {
                                 context.pushNamed(ChatPage.routeName,
-                                    arguments: _profile.id);
+                                    arguments: _profile);
                               },
                             )
                           : const SizedBox(),

@@ -134,7 +134,7 @@ class _AccountPageState extends LoadingState<AccountPage> {
                     icon: const Icon(Icons.admin_panel_settings),
                     onPressed: () => context.pushNamed(AdminPage.routeName),
                   )
-                else if (_profile.elder)
+                else if (_profile.organization)
                   IconButton(
                     icon: const Icon(Icons.dashboard),
                     onPressed: () =>
