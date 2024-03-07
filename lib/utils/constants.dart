@@ -251,10 +251,18 @@ extension ShowSnackBar on BuildContext {
 }
 
 extension Navigate on BuildContext {
+  // TODO: turn fancy nav back on when issues are resolved
+  static bool disableFancyNavigation = true;
+
   NavigatorState get navigator => Navigator.of(this);
 
   Future<void> pushNamed(String routeName,
       {Object? arguments, bool withNavBar = false}) async {
+    if (disableFancyNavigation) {
+      navigator.pushNamed(routeName, arguments: arguments);
+      return;
+    }
+
     Route? previousRoute = navObserver.previousRoute;
     RouteSettings routeSettings =
         RouteSettings(arguments: arguments, name: routeName);
