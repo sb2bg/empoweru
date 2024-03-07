@@ -45,20 +45,21 @@ class Message {
         .then((map) => map != null ? Message.fromMap(map: map) : null);
   }
 
-  delete() async {
+  void delete() async {
     await supabase.from('messages').delete().eq('id', id);
   }
 
   // TODO: function doesn't exist
-  markRead() async {
+  void markRead() async {
     await supabase.rpc('mark_message', params: {'mid': id, 'read': true});
   }
 
-  markUnread() async {
+  void markUnread() async {
     await supabase.rpc('mark_message', params: {'mid': id, 'read': false});
   }
 
-  static create(String user, String contents, String roomId) async {
+  static Future<void> create(
+      String user, String contents, String roomId) async {
     await supabase
         .from('messages')
         .insert([
@@ -72,9 +73,7 @@ class Message {
         .single();
   }
 
-  bool unread() {
-    return !read && !isMine;
-  }
+  bool get unread => !read && !isMine;
 
   @override
   String toString() {
