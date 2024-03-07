@@ -128,13 +128,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   unreadUpdater() {
-    streamControllers.messageStream.listen((event) {
+    streamControllers.roomStream.listen((event) {
       int count = 0;
 
-      for (final room in event.values) {
-        if (room.first.unread()) {
-          count++;
-        }
+      for (final room in event) {
+        count += room.lastMessage?.read == false ? 1 : 0;
       }
 
       setState(() {
