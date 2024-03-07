@@ -7,7 +7,7 @@ import 'package:age_sync/utils/room.dart';
 
 class StreamControllers {
   late final Stream<HashMap<String, List<Message>>> messageStream;
-  late final Stream<List<Room>> roomStream;
+  late final Stream<List<RoomMeta>> roomStream;
 
   StreamControllers() {
     roomStream = supabase
@@ -15,10 +15,10 @@ class StreamControllers {
         .stream(primaryKey: ['room_id'])
         .eq('profile_id', supabase.userId)
         .asyncMap((maps) async {
-          final List<Room> rooms = [];
+          final List<RoomMeta> rooms = [];
 
           for (final map in maps) {
-            rooms.add(await Room.fromId(map['room_id']));
+            rooms.add(await RoomMeta.fromRoomId(map['room_id']));
           }
 
           return rooms;

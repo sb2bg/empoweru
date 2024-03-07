@@ -1,53 +1,50 @@
+import 'dart:async';
+
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/task.dart';
 
 class TaskController {
-  late Future<List<Task>> future;
-  final List<Task> tasks = [];
-  final List<Function> listeners = [];
+  late Future<List<Task>> ready;
+  final List<Task> _tasks = [];
+  final List<StreamController> _controllers = [];
 
   TaskController() {
     loadTasks((tasks) {
-      this.tasks.addAll(tasks);
+      _tasks.addAll(tasks);
     });
   }
 
-  loadTasks(Function(List<Task>) callback) {
-    future = Task.getTasks(supabase.userId);
-    future.then(callback);
+  void loadTasks(Function(List<Task>) callback) {
+    ready = Task.getTasks(supabase.userId);
+    ready.then(callback);
   }
 
-  addTask(Task task) {
-    tasks.add(task);
+  void addTask(Task task) {
+    _tasks.add(task);
     callListeners();
   }
 
-  removeTask(Task task) {
-    tasks.remove(task);
+  void removeTask(Task task) {
+    _tasks.remove(task);
     callListeners();
   }
 
-  toggleTask(Task task) {
+  void toggleTask(Task task) {
     task.toggleCompleted();
     callListeners();
   }
 
-  callListeners() {
-    for (final listener in listeners) {
-      listener();
+  void callListeners() {
+    for (final controller in _controllers) {
+      controller.add(_tasks);
     }
   }
 
-  addListener(Function listener) {
-    listeners.add(listener);
-  }
+  StreamSubscription listen(Function(List<Task>) listener) {
+    final stream = StreamController<List<Task>>();
+    _controllers.add(stream);
+    stream.add(_tasks);
 
-  reload() {
-    loadTasks((tasks) {
-      this.tasks.clear();
-      this.tasks.addAll(tasks);
-
-      callListeners();
-    });
+    return stream.stream.listen(listener);
   }
 }
