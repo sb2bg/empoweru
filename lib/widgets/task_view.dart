@@ -16,6 +16,7 @@ class TaskView extends StatefulWidget {
 
 class _TaskViewState extends State<TaskView> {
   String? _name;
+  late final bool _owner;
 
   @override
   void initState() {
@@ -25,6 +26,7 @@ class _TaskViewState extends State<TaskView> {
     Profile.fromId(widget.task.ownerId).then((profile) {
       setState(() {
         _name = profile.name;
+        _owner = widget.task.ownerId == supabase.userId;
       });
     });
   }
@@ -89,14 +91,15 @@ class _TaskViewState extends State<TaskView> {
                 },
                 child: const Text('Edit'),
               ),
-              TextButton(
-                onPressed: () {
-                  // taskController.deleteTask(widget.task);
-                  // setState(() {});
-                  context.pop();
-                },
-                child: const Text('Delete'),
-              ),
+              if (_owner)
+                TextButton(
+                  onPressed: () {
+                    // taskController.deleteTask(widget.task);
+                    // setState(() {});
+                    context.pop();
+                  },
+                  child: const Text('Delete'),
+                ),
             ],
           ),
         );
