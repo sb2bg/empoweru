@@ -28,23 +28,26 @@ class _ChatPageState extends LoadingState<ChatPage> {
   bool get disableRefresh => true;
 
   @override
-  onInit() async {
+  firstLoad() async {
     _roomId = await supabase.rpc('create_new_room', params: {
       'other_user_id': widget.other.id,
     });
 
-    await supabase.rpc('mark_messages_as_read', params: {
-      '_room_id': _roomId,
-    });
-
-    subscriptions.add(streamControllers.messageStream.listen((event) {
+    streamControllers.messageStream.listen((event) async {
       final messages = event[_roomId] ?? [];
 
       setState(() {
         _optimisticMessages = messages;
       });
-    }));
 
+      await supabase.rpc('mark_messages_as_read', params: {
+        '_room_id': _roomId,
+      });
+    });
+  }
+
+  @override
+  onInit() async {
     await _loadProfiles();
   }
 

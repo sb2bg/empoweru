@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   bool _loading = true;
   bool _error = false;
-  final List<StreamSubscription> subscriptions = [];
 
   setLoading(bool loading) {
     setState(() {
@@ -20,12 +19,13 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   @nonVirtual
   initState() {
     super.initState();
-    _initStateLogic();
+
+    firstLoad().then((_) {
+      _initStateLogic();
+    });
   }
 
   _initStateLogic() {
-    clearSubscriptions(); // clean up old subscriptions if we are reloading
-
     final start = DateTime.now();
 
     context.tryDatabaseAsync(
@@ -46,19 +46,12 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
 
   afterInit() {}
 
-  @override
-  void dispose() {
-    clearSubscriptions();
-    super.dispose();
-  }
-
-  void clearSubscriptions() {
-    for (final subscription in subscriptions) {
-      subscription.cancel();
-    }
-  }
-
   Future<void> onInit();
+
+  Future<void> firstLoad() {
+    return Future.value();
+  }
+
   AppBar? get constAppBar => null;
   AppBar? get loadingAppBar => null;
   AppBar? get loadedAppBar => null;

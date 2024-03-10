@@ -48,18 +48,18 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
   SortBy _sortBy = SortBy.createdAt;
 
   @override
-  onInit() async {
+  firstLoad() async {
     Completer<bool> roomsLoaded = Completer();
 
-    subscriptions.add(streamControllers.messageStream.listen((event) async {
+    streamControllers.messageStream.listen((event) async {
       for (final room in _rooms) {
         setState(() {
           room.lastMessage = event[room.roomId]?.first;
         });
       }
-    }));
+    });
 
-    subscriptions.add(streamControllers.roomStream.listen((event) async {
+    streamControllers.roomStream.listen((event) async {
       _rooms.clear();
 
       for (final room in event) {
@@ -104,10 +104,13 @@ class _ViewMessagesPageState extends LoadingState<ViewMessagesPage> {
       }
 
       setState(() {});
-    }));
+    });
 
     await roomsLoaded.future;
   }
+
+  @override
+  onInit() async {}
 
   @override
   AppBar? get constAppBar => AppBar(
