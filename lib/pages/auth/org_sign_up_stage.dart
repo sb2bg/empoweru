@@ -22,7 +22,9 @@ class OrgStage extends StatefulWidget {
     required this.parentSetState,
     required this.submitted,
   }) {
-    controllers.addAll(fields.map((_) => TextEditingController(text: '')));
+    for (var i = 0; i < fields.length; i++) {
+      controllers.add(TextEditingController());
+    }
   }
 
   final String title;
