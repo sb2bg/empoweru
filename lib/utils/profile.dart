@@ -9,21 +9,23 @@ class Profile {
     required this.id,
     required this.name,
     required this.avatarUrl,
-    required this.organization,
+    required this.organizationId,
     required this.admin,
   });
 
   final String id;
   final String name;
   final String avatarUrl;
-  final bool organization;
+  final String? organizationId;
   final bool admin;
+
+  bool get organization => organizationId != null;
 
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
         name = map['name'],
         avatarUrl = map['avatar_url'],
-        organization = map['organization'],
+        organizationId = map['organization'],
         admin = map['admin'];
 
   static Future<Profile> fromId(String uuid) async {
