@@ -22,28 +22,33 @@ enum Filter {
 }
 
 class _TaskPageState extends LoadingState<TaskPage> {
-  late List<Task> _tasks;
+  late List<Task> _tasks = [];
   late List<Task> _filteredTasks;
   late bool _isOrganization;
   Filter _filter = Filter.all;
 
   @override
-  Future<void> onInit() async {
+  firstLoad() async {
     await taskController.ready;
+    _isOrganization = (await supabase.getCurrentUser()).organization;
 
-    subscriptions.add(taskController.listen((tasks) {
+    setState(() {
+      _tasks = taskController.tasks;
+    });
+
+    taskController.addListener(() {
       setState(() {
-        _tasks = tasks;
+        _tasks = taskController.tasks;
       });
 
       filterTasks();
-    }));
+    });
+  }
 
-    final isOrganization = (await supabase.getCurrentUser()).organization;
-
+  @override
+  Future<void> onInit() async {
     setState(() {
       _filteredTasks = _tasks;
-      _isOrganization = isOrganization;
     });
   }
 

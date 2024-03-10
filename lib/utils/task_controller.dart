@@ -3,48 +3,33 @@ import 'dart:async';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/task.dart';
 
-class TaskController {
-  late Future<List<Task>> ready;
-  final List<Task> _tasks = [];
-  final List<StreamController> _controllers = [];
+import 'package:flutter/foundation.dart';
+
+class TaskController extends ChangeNotifier {
+  final List<Task> tasks = [];
+  late final Future<void> ready;
 
   TaskController() {
-    loadTasks((tasks) {
-      _tasks.addAll(tasks);
-    });
+    ready = loadTasks();
   }
 
-  void loadTasks(Function(List<Task>) callback) {
-    ready = Task.getTasks(supabase.userId);
-    ready.then(callback);
+  Future<void> loadTasks() async {
+    tasks.addAll(await Task.getTasks(supabase.userId));
+    notifyListeners();
   }
 
   void addTask(Task task) {
-    _tasks.add(task);
-    callListeners();
+    tasks.add(task);
+    notifyListeners();
   }
 
   void removeTask(Task task) {
-    _tasks.remove(task);
-    callListeners();
+    tasks.remove(task);
+    notifyListeners();
   }
 
   void toggleTask(Task task) {
     task.toggleCompleted();
-    callListeners();
-  }
-
-  void callListeners() {
-    for (final controller in _controllers) {
-      controller.add(_tasks);
-    }
-  }
-
-  StreamSubscription listen(Function(List<Task>) listener) {
-    final stream = StreamController<List<Task>>();
-    _controllers.add(stream);
-    stream.add(_tasks);
-
-    return stream.stream.listen(listener);
+    notifyListeners();
   }
 }

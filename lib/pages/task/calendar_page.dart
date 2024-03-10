@@ -53,21 +53,26 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
   }
 
   @override
-  Future<void> onInit() async {
-    _profile = await supabase.getCurrentUser();
-
+  firstLoad() async {
     await taskController.ready;
 
-    subscriptions.add(taskController.listen((tasks) {
+    taskController.addListener(() {
+      final tasks = taskController.tasks;
+
       setState(() {
         _getEvents(tasks);
         _selectedTasks = getTasksForDay(_focusedDay);
       });
-    }));
+    });
+  }
+
+  @override
+  Future<void> onInit() async {
+    _profile = await supabase.getCurrentUser();
 
     setState(() {
       _focusedDay = DateTime.now();
-      // _selectedTasks = _getEvents();
+      _selectedTasks = _getEvents(taskController.tasks);
     });
   }
 
@@ -126,6 +131,7 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
             });
           },
           calendarStyle: CalendarStyle(
+            outsideDaysVisible: false,
             markerDecoration: BoxDecoration(
               color: themeData.colorScheme.primary,
               shape: BoxShape.circle,
