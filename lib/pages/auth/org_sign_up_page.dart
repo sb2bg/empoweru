@@ -199,12 +199,24 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
                                     'Are you sure you want to submit your application?',
                                 confirmText: 'Submit',
                                 onConfirm: () {
-                                  /*
                                   supabase.from('organizations').insert({
-                                    // TODO: fill in fields
-                                  })
-                                  //
-                                  */
+                                    'name': _stages[0].controllers[0].text,
+                                    'mission': _stages[0].controllers[1].text,
+                                    'type': _stages[0].controllers[2].text,
+                                    'address': _stages[1].controllers[0].text,
+                                    'city': _stages[1].controllers[1].text,
+                                    'state': _stages[1].controllers[2].text,
+                                    'zip': _stages[1].controllers[3].text,
+                                    'phone': _stages[1].controllers[4].text,
+                                    'ein': _stages[1].controllers[5].text,
+                                    'website': _stages[2].controllers[0].text,
+                                    'facebook': _stages[2].controllers[1].text,
+                                    'twitter': _stages[2].controllers[2].text,
+                                    'instagram': _stages[2].controllers[3].text,
+                                    'logo': _stages[2].controllers[4].text,
+                                    'email': _stages[3].controllers[0].text,
+                                    'password': _stages[3].controllers[1].text,
+                                  });
 
                                   Future.delayed(Duration.zero).then((_) {
                                     context.showSnackBar(
