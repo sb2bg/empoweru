@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 
 class FieldInfo {
   const FieldInfo(this.label, this.icon, this.validator,
-      {this.textInputType = TextInputType.text, this.password = false});
+      {this.textInputType = TextInputType.text,
+      this.password = false,
+      this.image = false});
 
   final String label;
   final IconData icon;
   final TextInputType textInputType;
   final bool password;
+  final bool image;
   final String? Function(String) validator;
 }
 
@@ -130,36 +133,42 @@ class _OrgStageState extends State<OrgStage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    field.password
-                        ? PasswordTextField(
-                            controller: widget
-                                .controllers[widget.fields.indexOf(field)],
-                            onChanged: (_) {
-                              checkValidators();
-                              widget.parentSetState();
-                            },
-                          )
-                        : TextField(
-                            keyboardType: field.textInputType,
-                            onChanged: (_) {
-                              checkValidators();
-                              widget.parentSetState();
-                            },
-                            controller: widget
-                                .controllers[widget.fields.indexOf(field)],
-                            decoration: InputDecoration(
-                              hintText: field.label,
-                              prefixIcon: Icon(field.icon),
-                              suffixIcon: Icon(
-                                  _errors[widget.fields.indexOf(field)] == null
-                                      ? Icons.check
-                                      : Icons.error_outline,
-                                  color:
+                    field.image
+                        ? TextButton.icon(
+                            onPressed: () {},
+                            icon: Icon(field.icon),
+                            label: Text(field.label))
+                        : field.password
+                            ? PasswordTextField(
+                                controller: widget
+                                    .controllers[widget.fields.indexOf(field)],
+                                onChanged: (_) {
+                                  checkValidators();
+                                  widget.parentSetState();
+                                },
+                              )
+                            : TextField(
+                                keyboardType: field.textInputType,
+                                onChanged: (_) {
+                                  checkValidators();
+                                  widget.parentSetState();
+                                },
+                                controller: widget
+                                    .controllers[widget.fields.indexOf(field)],
+                                decoration: InputDecoration(
+                                  hintText: field.label,
+                                  prefixIcon: Icon(field.icon),
+                                  suffixIcon: Icon(
                                       _errors[widget.fields.indexOf(field)] ==
+                                              null
+                                          ? Icons.check
+                                          : Icons.error_outline,
+                                      color: _errors[widget.fields
+                                                  .indexOf(field)] ==
                                               null
                                           ? Colors.green
                                           : Colors.red),
-                            )),
+                                )),
                     if (_errors[widget.fields.indexOf(field)] != null &&
                         _showErrors)
                       Padding(
