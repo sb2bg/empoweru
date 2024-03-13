@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class OrgSignUpPage extends StatefulWidget {
   static const routeName = '/org-sign-up';
-  static const beta = true;
+  static const beta = false;
 
   const OrgSignUpPage({super.key});
 
@@ -21,6 +21,7 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
   }
 
   final List<OrgStage> _stages = [];
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -67,8 +68,17 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
               (city) => city.isEmpty ? 'City cannot be empty' : null),
           FieldInfo('State', Icons.location_city,
               (state) => state.isEmpty ? 'State cannot be empty' : null),
-          FieldInfo('Zip Code', Icons.location_city,
-              (zip) => zip.isEmpty ? 'Zip code cannot be empty' : null),
+          FieldInfo('Zip Code', Icons.location_city, (zip) {
+            if (zip.isEmpty) {
+              return 'Zip code cannot be empty';
+            }
+
+            if (zip.length != 5 || int.tryParse(zip) == null) {
+              return 'Zip code must be 5 digits';
+            }
+
+            return null;
+          }),
           FieldInfo('Phone Number', Icons.phone, (phone) {
             if (phone.isEmpty) {
               return null;
@@ -103,6 +113,8 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
             'Next, let\'s get your organization\'s social media links, website, and logo',
         subtitle: 'This helps build your organization\'s profile',
         fields: [
+          FieldInfo('Contact Email', Icons.email,
+              (email) => email.isEmpty ? 'Email cannot be empty' : null),
           FieldInfo('Website', Icons.web, (website) => null),
           FieldInfo('Facebook', Icons.facebook, (facebook) => null),
           FieldInfo('Twitter', Icons.south_america_outlined, (twitter) => null),
@@ -124,7 +136,9 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
             password: true,
             'Password',
             Icons.lock,
-            (password) => password.isEmpty ? 'Password cannot be empty' : null,
+            (password) => password.length < 6
+                ? 'Password must be at least 6 characters'
+                : null,
           ),
         ],
       )
@@ -145,6 +159,84 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
 
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> signUpOrganization() async {
+    try {
+      if (!_stages[_currentStage].isValid) {
+        _stages[_currentStage].submitted.value = true;
+        return;
+      }
+
+      context.showConfirmationDialog(
+          title: 'Submit application?',
+          message: 'Are you sure you want to submit your application?',
+          confirmText: 'Submit',
+          onConfirm: () async {
+            setState(() {
+              _submitting = true;
+            });
+
+            final signUpResponse = await supabase.auth.signUp(
+                email: _stages[3].controllers[0].text,
+                password: _stages[3].controllers[1].text,
+                data: {
+                  'full_name': _stages[0].controllers[0].text,
+                  if (_stages[2].controllers[5].text.isNotEmpty)
+                    'avatar_url': _stages[2].controllers[5].text,
+                });
+
+            if (signUpResponse.user == null && mounted) {
+              context.showErrorSnackBar(
+                message: 'Error signing up',
+              );
+
+              context.pop();
+              return;
+            }
+
+            final orgInsertResponse =
+                await supabase.from('organizations').insert({
+              'name': _stages[0].controllers[0].text,
+              'mission': _stages[0].controllers[1].text,
+              'type': _stages[0].controllers[2].text,
+              'address': _stages[1].controllers[0].text,
+              'city': _stages[1].controllers[1].text,
+              'state': _stages[1].controllers[2].text,
+              'zip': _stages[1].controllers[3].text,
+              'phone': _stages[1].controllers[4].text,
+              'ein': _stages[1].controllers[5].text,
+              'email': _stages[2].controllers[0].text,
+              'website': _stages[2].controllers[1].text,
+              'facebook': _stages[2].controllers[2].text,
+              'twitter': _stages[2].controllers[3].text,
+              'instagram': _stages[2].controllers[4].text,
+              'logo': _stages[2].controllers[5].text,
+            }).select('id');
+
+            await supabase.from('profiles').update({
+              'organization': orgInsertResponse[0]['id'],
+            }).eq('id', signUpResponse.user!.id);
+
+            if (mounted) {
+              context.showSnackBar(
+                message:
+                    'Successfully completed organization sign up. We will review your application and get back to you soon.',
+                backgroundColor: Colors.green,
+              );
+
+              context.pop();
+            }
+          });
+    } catch (error) {
+      if (mounted) {
+        context.showErrorSnackBar(
+          message: 'Error signing up',
+        );
+      }
+
+      context.pop();
+    }
   }
 
   @override
@@ -192,42 +284,7 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
                           label: const Icon(Icons.arrow_forward),
                         )
                       : ElevatedButton.icon(
-                          onPressed: () {
-                            context.showConfirmationDialog(
-                                title: 'Submit application?',
-                                message:
-                                    'Are you sure you want to submit your application?',
-                                confirmText: 'Submit',
-                                onConfirm: () {
-                                  supabase.from('organizations').insert({
-                                    'name': _stages[0].controllers[0].text,
-                                    'mission': _stages[0].controllers[1].text,
-                                    'type': _stages[0].controllers[2].text,
-                                    'address': _stages[1].controllers[0].text,
-                                    'city': _stages[1].controllers[1].text,
-                                    'state': _stages[1].controllers[2].text,
-                                    'zip': _stages[1].controllers[3].text,
-                                    'phone': _stages[1].controllers[4].text,
-                                    'ein': _stages[1].controllers[5].text,
-                                    'website': _stages[2].controllers[0].text,
-                                    'facebook': _stages[2].controllers[1].text,
-                                    'twitter': _stages[2].controllers[2].text,
-                                    'instagram': _stages[2].controllers[3].text,
-                                    'logo': _stages[2].controllers[4].text,
-                                    'email': _stages[3].controllers[0].text,
-                                    'password': _stages[3].controllers[1].text,
-                                  });
-
-                                  Future.delayed(Duration.zero).then((_) {
-                                    context.showSnackBar(
-                                        message:
-                                            'Successfully completed organization sign up. We will review your application and get back to you soon.',
-                                        backgroundColor: Colors.green);
-                                  });
-
-                                  context.pop();
-                                });
-                          },
+                          onPressed: _submitting ? null : signUpOrganization,
                           icon: const Text('Finish'),
                           label: const Icon(Icons.check),
                         ))
