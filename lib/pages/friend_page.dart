@@ -74,7 +74,7 @@ class _FriendPageState extends LoadingState<FriendPage> {
                     title: Text(friend.name),
                     onTap: () {
                       context.pushNamed(ViewAccountPage.routeName,
-                          arguments: friend.id);
+                          arguments: friend);
                     },
                   );
                 },
