@@ -408,8 +408,12 @@ extension CurrentUser on SupabaseClient {
 
     final id = currentUser.id;
 
-    cachedProfile = Profile.fromMap(
-        await supabase.from('profiles').select().eq('id', id).single());
+    cachedProfile = Profile.fromMap(await supabase
+        .from('profiles_with_organization')
+        .select()
+        .eq('id', id)
+        .single());
+
     lastProfileFetch = DateTime.now();
 
     return cachedProfile!;
