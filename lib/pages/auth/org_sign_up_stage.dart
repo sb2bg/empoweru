@@ -124,7 +124,6 @@ class _OrgStageState extends State<OrgStage> {
             itemCount: widget.fields.length,
             itemBuilder: (context, index) {
               final field = widget.fields[index];
-              final controller = widget.controllers[index];
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 4.0),
@@ -133,11 +132,16 @@ class _OrgStageState extends State<OrgStage> {
                   children: [
                     field.password
                         ? PasswordTextField(
-                            controller: controller,
+                            controller: widget
+                                .controllers[widget.fields.indexOf(field)],
+                            onChanged: (_) {
+                              checkValidators();
+                              widget.parentSetState();
+                            },
                           )
                         : TextField(
                             keyboardType: field.textInputType,
-                            onChanged: (value) {
+                            onChanged: (_) {
                               checkValidators();
                               widget.parentSetState();
                             },
