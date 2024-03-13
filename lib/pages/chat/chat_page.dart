@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
@@ -23,6 +25,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
   late final Profile _other;
   late final String _roomId;
   late List<Message> _optimisticMessages = [];
+  late final StreamSubscription streamSubscription;
 
   @override
   bool get disableRefresh => true;
@@ -33,7 +36,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
       'other_user_id': widget.other.id,
     });
 
-    streamControllers.messageStream.listen((event) async {
+    streamSubscription = streamControllers.messageStream.listen((event) async {
       final messages = event[_roomId] ?? [];
 
       setState(() {
@@ -54,6 +57,12 @@ class _ChatPageState extends LoadingState<ChatPage> {
   _loadProfiles() async {
     _other = widget.other;
     _me = await supabase.getCurrentUser();
+  }
+
+  @override
+  void dispose() {
+    streamSubscription.cancel();
+    super.dispose();
   }
 
   @override
