@@ -49,11 +49,6 @@ class Message {
     await supabase.from('messages').delete().eq('id', id);
   }
 
-  // TODO: function doesn't exist
-  void markRead() async {
-    await supabase.rpc('mark_message', params: {'mid': id, 'read': true});
-  }
-
   void markUnread() async {
     await supabase.rpc('mark_message', params: {'mid': id, 'read': false});
   }
