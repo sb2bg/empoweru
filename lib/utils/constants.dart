@@ -258,17 +258,19 @@ extension Navigate on BuildContext {
 
   Future<void> pushNamed(String routeName,
       {Object? arguments, bool withNavBar = false}) async {
-    if (disableFancyNavigation) {
-      navigator.pushNamed(routeName, arguments: arguments);
-      return;
-    }
-
     Route? previousRoute = navObserver.previousRoute;
     RouteSettings routeSettings =
         RouteSettings(arguments: arguments, name: routeName);
 
     WidgetBuilder builder = getRoute(routeName, routeSettings);
     Widget widget = builder(this);
+
+    if (disableFancyNavigation) {
+      await PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
+          screen: widget, settings: routeSettings, withNavBar: withNavBar);
+      navObserver.push(CustomRoute(settings: routeSettings));
+      return;
+    }
 
     if (!navigator.canPop() || previousRoute == null) {
       await PersistentNavBarNavigator.pushNewScreenWithRouteSettings(this,
