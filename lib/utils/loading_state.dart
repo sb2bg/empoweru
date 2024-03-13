@@ -25,6 +25,7 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
     });
   }
 
+  @nonVirtual
   _initStateLogic() {
     final start = DateTime.now();
 
@@ -57,10 +58,15 @@ abstract class LoadingState<T extends StatefulWidget> extends State<T> {
   AppBar? get loadedAppBar => null;
   Widget? get header => null;
   bool get disableRefresh => false;
+  bool get bare => false;
 
   @override
   @nonVirtual
   Widget build(BuildContext context) {
+    if (bare) {
+      return _loading ? preloader : buildLoaded(context);
+    }
+
     final scaffold = Scaffold(
         appBar: constAppBar ?? (_loading ? loadingAppBar : loadedAppBar),
         body: _error
