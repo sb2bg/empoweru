@@ -1,3 +1,4 @@
+import 'package:age_sync/pages/privacy_policy_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -46,11 +47,11 @@ class SettingsPage extends StatelessWidget {
                 leading: const Icon(Icons.lock_outline),
                 title: const Text('Change password'),
                 onTap: () => print('TODO')),
-            ListTile(
-                leading: const Icon(Icons.cake),
-                title: const Text('Change birthday'),
-                onTap: () => print('TODO')),
             const Divider(),
+            ListTile(
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title: const Text('Privacy Policy'),
+                onTap: () => context.pushNamed(PrivacyPolicyPage.routeName)),
             ListTile(
               leading: const Icon(
                 Icons.delete_outline,
