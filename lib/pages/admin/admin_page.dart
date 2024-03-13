@@ -26,8 +26,8 @@ class _AdminPageState extends LoadingState<AdminPage>
   late List<Profile> _profiles;
   late List<Task> _tasks;
   late List<RoomMeta> _rooms;
-  late List<Organization> _organizations;
-  List<Organization> _filteredOrgs = [];
+  late List<OrganizationMeta> _organizations;
+  List<OrganizationMeta> _filteredOrgs = [];
   String _filter = "All";
 
   static final _tabs = [
@@ -60,6 +60,10 @@ class _AdminPageState extends LoadingState<AdminPage>
     List<dynamic> rooms = await supabase.from("rooms").select();
     List<RoomMeta> roomMetas = await Future.wait(
         rooms.map((room) => RoomMeta.fromRoomId(room["id"])).toList());
+    List<dynamic> organizations = await supabase.from("organizations").select();
+    List<OrganizationMeta> orgMetas = await Future.wait(organizations
+        .map((org) => OrganizationMeta.fromId(org["id"]))
+        .toList());
 
     setState(() {
       _profile = profile;
@@ -70,26 +74,7 @@ class _AdminPageState extends LoadingState<AdminPage>
         length: _tabs.length,
         vsync: this,
       );
-      _organizations = [
-        Organization(
-            name: "Houston Food Bank",
-            verified: true,
-            id: "1",
-            logo:
-                "https://pbs.twimg.com/profile_images/914867909880451079/QZL0POL__400x400.jpg",
-            email: "Receiving@houstonfoodbank.org",
-            phone: "713-547-8660",
-            address: "535 Portwall St",
-            city: "Houston",
-            mission: "Leading the fight against hunger.",
-            website: "https://www.houstonfoodbank.org/",
-            facebook: null,
-            instagram: null,
-            twitter: "https://twitter.com/houstonfoodbank",
-            state: "TX",
-            type: "Non-profit",
-            zip: "77029")
-      ];
+      _organizations = orgMetas;
       _filteredOrgs = _organizations;
     });
   }
@@ -117,7 +102,7 @@ class _AdminPageState extends LoadingState<AdminPage>
                     child: GestureDetector(
                   onTap: () {
                     context.pushNamed(ViewAccountPage.routeName,
-                        arguments: profile.id);
+                        arguments: profile);
                   },
                   child: ListTile(
                     leading: CircleAvatar(
@@ -257,11 +242,11 @@ class _AdminPageState extends LoadingState<AdminPage>
                           _filteredOrgs = _organizations;
                         } else if (value == "Pending") {
                           _filteredOrgs = _organizations
-                              .where((org) => !org.verified)
+                              .where((org) => !org.organization.verified)
                               .toList();
                         } else if (value == "Approved") {
                           _filteredOrgs = _organizations
-                              .where((org) => org.verified)
+                              .where((org) => org.organization.verified)
                               .toList();
                         }
 
@@ -283,13 +268,13 @@ class _AdminPageState extends LoadingState<AdminPage>
                         child: ListTile(
                       leading: CircleAvatar(
                         backgroundImage: CachedNetworkImageProvider(
-                          org.logo,
+                          org.profile.avatarUrl,
                         ),
                       ),
                       title: Row(
                         children: [
-                          Text(org.name),
-                          if (org.verified)
+                          Text(org.organization.name),
+                          if (org.organization.verified)
                             const Padding(
                               padding: EdgeInsets.only(left: 8.0),
                               child: Icon(
@@ -297,7 +282,7 @@ class _AdminPageState extends LoadingState<AdminPage>
                                 color: Colors.green,
                               ),
                             )
-                          else if (!org.verified)
+                          else if (!org.organization.verified)
                             const Padding(
                               padding: EdgeInsets.only(left: 8.0),
                               child: Row(
@@ -317,8 +302,8 @@ class _AdminPageState extends LoadingState<AdminPage>
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(org.mission),
-                          if (!org.verified)
+                          Text(org.organization.mission),
+                          if (!org.organization.verified)
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: SizedBox(
