@@ -4,17 +4,17 @@ import 'package:age_sync/utils/loading_state.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class OpportunityPage extends StatefulWidget {
-  const OpportunityPage({Key? key}) : super(key: key);
+class LearningPage extends StatefulWidget {
+  const LearningPage({Key? key}) : super(key: key);
 
   static const routeName = '/opportunity';
   static const beta = true;
 
   @override
-  State<OpportunityPage> createState() => _OpportunityPageState();
+  State<LearningPage> createState() => _LearningPageState();
 }
 
-class _OpportunityPageState extends LoadingState<OpportunityPage> {
+class _LearningPageState extends LoadingState<LearningPage> {
   final YoutubePlayerController _controller = YoutubePlayerController(
     initialVideoId: 'pbifXGYzYXU',
     flags: const YoutubePlayerFlags(
@@ -32,7 +32,7 @@ class _OpportunityPageState extends LoadingState<OpportunityPage> {
 
   @override
   Widget buildLoaded(BuildContext context) {
-    if (OpportunityPage.beta) {
+    if (LearningPage.beta) {
       return const BetaPage();
     }
 
