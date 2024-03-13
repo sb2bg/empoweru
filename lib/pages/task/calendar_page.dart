@@ -52,18 +52,25 @@ class _CalendarPageState extends LoadingState<CalendarPage> {
     return _events[_focusedDay] ?? [];
   }
 
+  void taskListener() {
+    final tasks = taskController.tasks;
+
+    setState(() {
+      _getEvents(tasks);
+      _selectedTasks = getTasksForDay(_focusedDay);
+    });
+  }
+
   @override
   firstLoad() async {
     await taskController.ready;
+    taskController.addListener(taskListener);
+  }
 
-    taskController.addListener(() {
-      final tasks = taskController.tasks;
-
-      setState(() {
-        _getEvents(tasks);
-        _selectedTasks = getTasksForDay(_focusedDay);
-      });
-    });
+  @override
+  void dispose() {
+    super.dispose();
+    taskController.removeListener(taskListener);
   }
 
   @override
