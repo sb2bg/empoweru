@@ -1,11 +1,19 @@
+import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/privacy_policy_page.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   static const routeName = '/settings';
 
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +45,19 @@ class SettingsPage extends StatelessWidget {
             ListTile(
                 leading: const Icon(Icons.account_circle_outlined),
                 title: const Text('Change avatar'),
-                onTap: () => print('TODO')),
+                onTap: _loading
+                    ? null
+                    : () async {
+                        setState(() {
+                          _loading = true;
+                        });
+
+                        await changePfp(context);
+
+                        setState(() {
+                          _loading = false;
+                        });
+                      }),
             const Divider(),
             ListTile(
                 leading: const Icon(Icons.email_outlined),
