@@ -275,11 +275,37 @@ class _AdminPageState extends LoadingState<AdminPage>
                         children: [
                           Text(org.organization.name),
                           if (org.organization.verified)
-                            const Padding(
+                            Padding(
                               padding: EdgeInsets.only(left: 8.0),
-                              child: Icon(
-                                Icons.verified,
-                                color: Colors.green,
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.verified,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon:
+                                        const Icon(Icons.remove_circle_outline),
+                                    onPressed: () async {
+                                      final sure = await context.confirmation(
+                                          'Unverify ${org.organization.name}');
+
+                                      if (!sure) {
+                                        return;
+                                      }
+
+                                      await supabase
+                                          .from("organizations")
+                                          .update({"verified": false}).eq(
+                                              "id", org.organization.id);
+
+                                      setState(() {
+                                        org.organization.verified = false;
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
                             )
                           else if (!org.organization.verified)
