@@ -21,7 +21,6 @@ class EmailLogInPage extends StatefulWidget {
 class _EmailLogInPageState extends State<EmailLogInPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   bool _isLoading = false;
 
   // TODO: deduplicate this code from lib/pages/login_page.dart
