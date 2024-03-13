@@ -3,12 +3,79 @@ import 'package:age_sync/pages/org_dashboard.dart';
 import 'package:age_sync/pages/settings_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../utils/constants.dart';
 import '../utils/profile.dart';
+
+changePfp(BuildContext context) async {
+  final permission = await Permission.photos.request();
+
+  if (!permission.isGranted) {
+    if (!context.mounted) {
+      return;
+    }
+
+    await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('Permission required'),
+            content: const Text(
+                'We need permission to access your photos to change your avatar.'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('Settings'),
+                onPressed: () {
+                  openAppSettings();
+                  context.pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text('Cancel'),
+                onPressed: () => context.pop(),
+              ),
+            ],
+          );
+        });
+    return;
+  }
+
+  final picker = ImagePicker();
+
+  final imageFile = await picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 300,
+    maxHeight: 300,
+  );
+
+  if (imageFile == null) {
+    return;
+  }
+
+  final bytes = await imageFile.readAsBytes();
+  final fileExt = imageFile.path.split('.').last;
+  final fileName = '${supabase.userId}.$fileExt';
+  final filePath = fileName;
+  await supabase.storage.from('avatars').uploadBinary(
+        filePath,
+        bytes,
+        fileOptions: FileOptions(contentType: imageFile.mimeType),
+      );
+  final imageUrl = await supabase.storage
+      .from('avatars')
+      .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 10);
+
+  // TODO: this won't work with RLS
+  await supabase.from('profiles').upsert({
+    'id': supabase.userId,
+    'avatar_url': imageUrl,
+  });
+}
 
 class AccountPage extends StatefulWidget {
   static const routeName = '/account';
@@ -40,39 +107,6 @@ class _AccountPageState extends LoadingState<AccountPage> {
         title: const Text('Account'),
       );
 
-  changePfp() async {
-    final picker = ImagePicker();
-
-    final imageFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 300,
-      maxHeight: 300,
-    );
-
-    if (imageFile == null) {
-      return;
-    }
-
-    final bytes = await imageFile.readAsBytes();
-    final fileExt = imageFile.path.split('.').last;
-    final fileName = '${supabase.userId}.$fileExt';
-    final filePath = fileName;
-    await supabase.storage.from('avatars').uploadBinary(
-          filePath,
-          bytes,
-          fileOptions: FileOptions(contentType: imageFile.mimeType),
-        );
-    final imageUrl = await supabase.storage
-        .from('avatars')
-        .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 10);
-
-    // TODO: this won't work with RLS
-    await supabase.from('profiles').upsert({
-      'id': supabase.userId,
-      'avatar_url': imageUrl,
-    });
-  }
-
   @override
   Widget buildLoaded(BuildContext context) {
     return Padding(
@@ -97,7 +131,7 @@ class _AccountPageState extends LoadingState<AccountPage> {
                               ListTile(
                                   leading: const Icon(Icons.photo),
                                   title: const Text('Choose from gallery'),
-                                  onTap: changePfp),
+                                  onTap: () => changePfp(context)),
                               ListTile(
                                   leading: const Icon(Icons.delete),
                                   title: const Text('Remove avatar'),
@@ -153,16 +187,6 @@ class _AccountPageState extends LoadingState<AccountPage> {
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Notification Settings'),
             onTap: () => context.pushNamed(SettingsPage.routeName),
-          ),
-          ListTile(
-            leading: const Icon(Icons.language_outlined),
-            title: const Text('Language'),
-            onTap: () => print('TODO'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.color_lens_outlined),
-            title: const Text('App Theme'),
-            onTap: () => print('TODO'),
           ),
           const Divider(),
           ListTile(
