@@ -50,6 +50,7 @@ dependencies:
   youtube_player_flutter: ^8.1.2
   supabase: ^1.11.11
   flutter_markdown: ^0.6.20
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:
