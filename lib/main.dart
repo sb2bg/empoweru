@@ -4,6 +4,7 @@ import 'package:age_sync/pages/approve_org_page.dart';
 import 'package:age_sync/pages/auth/org_sign_up_page.dart';
 import 'package:age_sync/pages/learning_page.dart';
 import 'package:age_sync/pages/org_dashboard.dart';
+import 'package:age_sync/pages/privacy_policy_page.dart';
 import 'package:age_sync/pages/settings_page.dart';
 import 'package:age_sync/pages/task/calendar_page.dart';
 import 'package:age_sync/pages/chat/chat_page.dart';
@@ -65,7 +66,9 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
         ChatPage.routeName: (_) =>
             ChatPage(other: settings.arguments as Profile),
-        EmailLogInPage.routeName: (_) => const EmailLogInPage(),
+        EmailLogInPage.routeName: (_) => settings.arguments == null
+            ? const EmailLogInPage()
+            : EmailLogInPage(redirectRoute: settings.arguments as String),
         EmailSignUpPage.routeName: (_) => const EmailSignUpPage(),
         TaskPage.routeName: (_) => const TaskPage(),
         FriendPage.routeName: (_) => const FriendPage(),
@@ -81,6 +84,7 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         ApproveOrgPage.routeName: (_) =>
             ApproveOrgPage(org: settings.arguments as Organization),
         OrganizationDashboard.routeName: (_) => const OrganizationDashboard(),
+        PrivacyPolicyPage.routeName: (_) => const PrivacyPolicyPage(),
       }[routeName] ??
       (_) => const ErrorPage(error: 'Route not found');
 }
