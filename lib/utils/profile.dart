@@ -9,15 +9,15 @@ class Profile {
     required this.id,
     required this.name,
     required this.avatarUrl,
-    required this.organizationId,
     required this.admin,
+    this.organizationId,
   });
 
   final String id;
   final String name;
   final String avatarUrl;
-  final String? organizationId;
   final bool admin;
+  String? organizationId;
 
   bool get organization => organizationId != null;
 
@@ -25,7 +25,7 @@ class Profile {
       : id = map['id'],
         name = map['name'],
         avatarUrl = map['avatar_url'],
-        organizationId = map['organization'],
+        organizationId = map['organization_id'],
         admin = map['admin'];
 
   static Future<Profile> fromId(String uuid) async {
@@ -33,8 +33,11 @@ class Profile {
       return await supabase.getCurrentUser();
     }
 
-    return Profile.fromMap(
-        await supabase.from('profiles').select().eq('id', uuid).single());
+    return Profile.fromMap(await supabase
+        .from('profiles_with_organization')
+        .select()
+        .eq('id', uuid)
+        .single());
   }
 
   Future<List<Profile>> getFriends() async {
