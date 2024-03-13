@@ -75,16 +75,20 @@ class _NewChatPageState extends LoadingState<NewChatPage> {
   @override
   Widget buildLoaded(BuildContext context) {
     return Center(
-      child: ListView.separated(
-          separatorBuilder: (context, index) => const Divider(),
-          itemCount: _selected.length,
-          itemBuilder: (context, index) {
-            final friend = _friends[index];
+      child: _friends.isEmpty && _selected.isEmpty
+          ? const Text('No friends found')
+          : _selected.isEmpty
+              ? const Text('No results found')
+              : ListView.separated(
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemCount: _selected.length,
+                  itemBuilder: (context, index) {
+                    final friend = _friends[index];
 
-            return FriendEntry(
-              profile: friend,
-            );
-          }),
+                    return FriendEntry(
+                      profile: friend,
+                    );
+                  }),
     );
   }
 }
