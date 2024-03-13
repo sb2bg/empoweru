@@ -25,7 +25,8 @@ class _ChatPageState extends LoadingState<ChatPage> {
   late final Profile _other;
   late final String _roomId;
   late List<Message> _optimisticMessages = [];
-  late final StreamSubscription streamSubscription;
+  late final StreamSubscription _streamSubscription;
+  bool _shouldMarkMessagesAsRead = true;
 
   @override
   bool get disableRefresh => true;
@@ -36,16 +37,24 @@ class _ChatPageState extends LoadingState<ChatPage> {
       'other_user_id': widget.other.id,
     });
 
-    streamSubscription = streamControllers.messageStream.listen((event) async {
+    _streamSubscription = streamControllers.messageStream.listen((event) async {
       final messages = event[_roomId] ?? [];
 
       setState(() {
         _optimisticMessages = messages;
       });
 
-      await supabase.rpc('mark_messages_as_read', params: {
-        '_room_id': _roomId,
-      });
+      if (_shouldMarkMessagesAsRead) {
+        await supabase.rpc('mark_messages_as_read', params: {
+          '_room_id': _roomId,
+        });
+
+        _shouldMarkMessagesAsRead = false;
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _shouldMarkMessagesAsRead = true;
+        });
+      }
     });
   }
 
@@ -61,7 +70,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
 
   @override
   void dispose() {
-    streamSubscription.cancel();
+    _streamSubscription.cancel();
     super.dispose();
   }
 
