@@ -9,7 +9,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class EmailLogInPage extends StatefulWidget {
   static const routeName = '/email-log-in';
 
-  const EmailLogInPage({super.key});
+  const EmailLogInPage(
+      {super.key, this.redirectRoute = EmailSignUpPage.routeName});
+
+  final String redirectRoute;
 
   @override
   State<EmailLogInPage> createState() => _EmailLogInPageState();
@@ -78,7 +81,9 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       TextButton(
-                          onPressed: _isLoading ? null : () => print("TODO"),
+                          onPressed: _isLoading
+                              ? null
+                              : () => context.showIncompleteDialog(),
                           child: const Text('Forgot Password?')),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _signIn,
@@ -95,7 +100,7 @@ class _EmailLogInPageState extends State<EmailLogInPage> {
                 TextButton(
                     onPressed: _isLoading
                         ? null
-                        : () => context.pushNamed(EmailSignUpPage.routeName),
+                        : () => context.pushNamed(widget.redirectRoute),
                     child: const Text('Sign Up'))
               ],
             ),
