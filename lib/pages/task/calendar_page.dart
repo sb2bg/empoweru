@@ -181,7 +181,7 @@ class _EventViewState extends State<EventView> {
     final children = widget.tasks.isEmpty
         ? [
             const ListTile(
-              title: Text('No tasks due this day', style: subtitleStyle),
+              title: Text('No tasks on this day', style: subtitleStyle),
             )
           ]
         : widget.tasks.map((task) => TaskView(task: task)).toList();
