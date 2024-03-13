@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/pages/approve_org_page.dart';
@@ -99,14 +101,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final newUser = prefs.getBool(PrefKeys.newUser.key) ?? true;
-  bool loggedIn() => supabase.auth.currentSession != null;
-  int unread = 0;
+  final _newUser = prefs.getBool(PrefKeys.newUser.key) ?? true;
+  bool _loggedIn() => supabase.auth.currentSession != null;
+  int _unread = 0;
+  StreamSubscription? _unreadSub;
 
   void unreadUpdater() {
-    streamControllers.roomStream.listen((event) {
+    _unreadSub = streamControllers.roomStream.listen((event) {
+      int unread = 0;
+
+      for (final room in event) {
+        if (room.lastMessage?.unread == true) {
+          unread++;
+        }
+      }
+
       setState(() {
-        unread = event.where((room) => room.lastMessage?.unread == true).length;
+        _unread = unread;
       });
     });
   }
@@ -118,6 +129,7 @@ class _MyAppState extends State<MyApp> {
 
       if (event == AuthChangeEvent.signedOut) {
         supabase.invalidateCache();
+        _unreadSub?.cancel();
       }
 
       if (event == AuthChangeEvent.signedIn) {
@@ -144,7 +156,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: ThemeMode.dark,
       darkTheme: themeData,
       initialRoute: '/',
-      home: Home(loggedIn: loggedIn(), newUser: newUser, unread: unread),
+      home: Home(loggedIn: _loggedIn(), newUser: _newUser, unread: _unread),
     ));
   }
 }
@@ -165,9 +177,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends LoadingState<Home> {
+  late Profile _me;
   late PersistentTabController _controller;
-  List<Widget> _navScreens = [];
-  List<PersistentBottomNavBarItem> _navItems = [];
 
   @override
   bool get bare => true;
@@ -193,8 +204,7 @@ class _HomeState extends LoadingState<Home> {
     );
   }
 
-  Future<List<PersistentBottomNavBarItem>> generateNavBarItems(
-      Profile user) async {
+  List<PersistentBottomNavBarItem> _generateNavBarItems(Profile user) {
     return [
       _generateNavBarItem(title: 'Learning', icon: Icons.school),
       if (!user.organization)
@@ -208,7 +218,7 @@ class _HomeState extends LoadingState<Home> {
     ];
   }
 
-  Future<List<Widget>> generateScreens(Profile user) async {
+  List<Widget> _generateScreens(Profile user) {
     return [
       const LearningPage(),
       if (!user.organization) const OpportunityPage(),
@@ -220,11 +230,10 @@ class _HomeState extends LoadingState<Home> {
 
   @override
   Future<void> onInit() async {
-    Profile me = await supabase.getCurrentUser();
+    _me = await supabase.getCurrentUser();
 
-    _navScreens = await generateScreens(me);
-    _navItems = await generateNavBarItems(me);
-    _controller = PersistentTabController(initialIndex: _navScreens.length - 1);
+    final navScreens = _generateScreens(_me); // just to get the length
+    _controller = PersistentTabController(initialIndex: navScreens.length - 1);
   }
 
   @override
@@ -235,8 +244,8 @@ class _HomeState extends LoadingState<Home> {
             : PersistentTabView(
                 context,
                 controller: _controller,
-                screens: _navScreens,
-                items: _navItems,
+                screens: _generateScreens(_me),
+                items: _generateNavBarItems(_me),
                 backgroundColor: Colors.grey[900]!,
                 navBarStyle: NavBarStyle.style3,
               )
