@@ -21,8 +21,8 @@ class ChatBubble extends StatelessWidget {
     List<Widget> chatContents = [
       if (!message.isMine)
         GestureDetector(
-          onTap: () => context.pushNamed(ViewAccountPage.routeName,
-              arguments: profile.id),
+          onTap: () =>
+              context.pushNamed(ViewAccountPage.routeName, arguments: profile),
           child: CircleAvatar(
             radius: 20,
             backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
@@ -68,7 +68,7 @@ class ChatBubble extends StatelessWidget {
         leading: const Icon(Icons.account_circle),
         title: const Text('View profile'),
         onTap: () {
-          context.pushNamed(ViewAccountPage.routeName, arguments: profile.id);
+          context.pushNamed(ViewAccountPage.routeName, arguments: profile);
         },
       ),
       ListTile(
@@ -113,7 +113,7 @@ class ChatBubbleReceived extends StatelessWidget {
     List<Widget> chatContents = [
       GestureDetector(
         onTap: () =>
-            context.pushNamed(ViewAccountPage.routeName, arguments: profile.id),
+            context.pushNamed(ViewAccountPage.routeName, arguments: profile),
         child: CircleAvatar(
           radius: 20,
           backgroundImage: CachedNetworkImageProvider(profile.avatarUrl),
@@ -152,7 +152,7 @@ class ChatBubbleReceived extends StatelessWidget {
         leading: const Icon(Icons.account_circle),
         title: const Text('View profile'),
         onTap: () {
-          context.pushNamed(ViewAccountPage.routeName, arguments: profile.id);
+          context.pushNamed(ViewAccountPage.routeName, arguments: profile);
         },
       ),
       ListTile(
