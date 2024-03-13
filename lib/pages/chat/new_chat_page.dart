@@ -14,6 +14,7 @@ class NewChatPage extends StatefulWidget {
 }
 
 class _NewChatPageState extends LoadingState<NewChatPage> {
+  late Profile _self;
   final _searchController = TextEditingController();
   final _friends = <Profile>[];
   late List<Profile> _selected = [];
@@ -23,8 +24,8 @@ class _NewChatPageState extends LoadingState<NewChatPage> {
 
   @override
   Future<void> onInit() async {
-    final me = await supabase.getCurrentUser();
-    _friends.addAll(await me.getFriends());
+    _self = await supabase.getCurrentUser();
+    _friends.addAll(await _self.getFriends());
     _selected = _friends;
   }
 
@@ -76,7 +77,9 @@ class _NewChatPageState extends LoadingState<NewChatPage> {
   Widget buildLoaded(BuildContext context) {
     return Center(
       child: _friends.isEmpty && _selected.isEmpty
-          ? const Text('No friends found')
+          ? _self.organization
+              ? const Text('No members of your organization found.')
+              : const Text('You are not in any organizations yet.')
           : _selected.isEmpty
               ? const Text('No results found')
               : ListView.separated(
