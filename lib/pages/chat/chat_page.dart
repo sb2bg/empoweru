@@ -72,7 +72,7 @@ class _ChatPageState extends LoadingState<ChatPage> {
   AppBar get loadedAppBar => AppBar(title: Text(_other.name), actions: [
         IconButton(
           onPressed: () {
-            context.pushNamed(ViewAccountPage.routeName, arguments: _other.id);
+            context.pushNamed(ViewAccountPage.routeName, arguments: _other);
           },
           icon: const Icon(Icons.account_circle),
         ),
