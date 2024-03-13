@@ -9,9 +9,9 @@ import '../utils/profile.dart';
 class ViewAccountPage extends StatefulWidget {
   static const routeName = '/view-account';
 
-  const ViewAccountPage({super.key, required this.userId});
+  const ViewAccountPage({super.key, required this.user});
 
-  final String userId;
+  final Profile user;
 
   @override
   State<ViewAccountPage> createState() => _ViewAccountPageState();
@@ -24,11 +24,10 @@ class _ViewAccountPageState extends LoadingState<ViewAccountPage> {
 
   @override
   Future<void> onInit() async {
-    final profile = await Profile.fromId(widget.userId);
-    final friendStatus = await profile.friendStatus(supabase.userId);
+    _profile = widget.user;
+    final friendStatus = await _profile.friendStatus(supabase.userId);
 
     setState(() {
-      _profile = profile;
       _friendStatus = friendStatus;
     });
   }
