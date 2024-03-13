@@ -95,7 +95,8 @@ class _TaskPageState extends LoadingState<TaskPage> {
               onPressed: () {
                 context.pushNamed(NewTaskPage.routeName);
               },
-            )
+            ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.view_array))
         ],
       );
 
@@ -141,15 +142,21 @@ class _TaskPageState extends LoadingState<TaskPage> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            scrollDirection: Axis.vertical,
-            itemCount: _filteredTasks.length,
-            itemBuilder: (context, index) {
-              final task = _filteredTasks[index];
-              return TaskView(task: task);
-            },
-          ),
+          child: _tasks.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No tasks found',
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  itemCount: _filteredTasks.length,
+                  itemBuilder: (context, index) {
+                    final task = _filteredTasks[index];
+                    return TaskView(task: task);
+                  },
+                ),
         ),
       ],
     );
