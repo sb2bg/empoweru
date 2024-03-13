@@ -3,6 +3,7 @@ import 'package:age_sync/pages/admin/admin_page.dart';
 import 'package:age_sync/pages/approve_org_page.dart';
 import 'package:age_sync/pages/auth/org_sign_up_page.dart';
 import 'package:age_sync/pages/learning_page.dart';
+import 'package:age_sync/pages/opportunity_page.dart';
 import 'package:age_sync/pages/org_dashboard.dart';
 import 'package:age_sync/pages/privacy_policy_page.dart';
 import 'package:age_sync/pages/settings_page.dart';
@@ -19,6 +20,7 @@ import 'package:age_sync/pages/task/new_task_page.dart';
 import 'package:age_sync/pages/task/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
 import 'package:age_sync/utils/constants.dart';
+import 'package:age_sync/utils/loading_state.dart';
 import 'package:age_sync/utils/organization.dart';
 import 'package:age_sync/utils/profile.dart';
 import 'package:age_sync/widgets/error_page.dart';
@@ -55,13 +57,13 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
             const LogInPage(type: LogInType.signUp),
         AccountPage.routeName: (_) => const AccountPage(),
         ViewAccountPage.routeName: (_) {
-          final userId = settings.arguments as String;
+          final user = settings.arguments as Profile;
 
-          if (userId == supabase.userId) {
+          if (user.id == supabase.userId) {
             return const AccountPage();
           }
 
-          return ViewAccountPage(userId: userId);
+          return ViewAccountPage(user: user);
         },
         ViewMessagesPage.routeName: (_) => const ViewMessagesPage(),
         ChatPage.routeName: (_) =>
@@ -78,11 +80,11 @@ WidgetBuilder getRoute(String routeName, RouteSettings settings) {
         AdminPage.routeName: (_) => const AdminPage(),
         SpectateChatRoomPage.routeName: (_) =>
             SpectateChatRoomPage(roomId: settings.arguments as String),
-        OpportunityPage.routeName: (_) => const OpportunityPage(),
+        LearningPage.routeName: (_) => const LearningPage(),
         SettingsPage.routeName: (_) => const SettingsPage(),
         OrgSignUpPage.routeName: (_) => const OrgSignUpPage(),
         ApproveOrgPage.routeName: (_) =>
-            ApproveOrgPage(org: settings.arguments as Organization),
+            ApproveOrgPage(org: settings.arguments as OrganizationMeta),
         OrganizationDashboard.routeName: (_) => const OrganizationDashboard(),
         PrivacyPolicyPage.routeName: (_) => const PrivacyPolicyPage(),
       }[routeName] ??
@@ -97,23 +99,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final PersistentTabController _controller = PersistentTabController(
-      initialIndex:
-          4); // TODO: change to 0 when we have a home page (not account page)
-  bool newUser = prefs.getBool(PrefKeys.newUser.key) ?? false;
+  final newUser = prefs.getBool(PrefKeys.newUser.key) ?? true;
   bool loggedIn() => supabase.auth.currentSession != null;
   int unread = 0;
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void unreadUpdater() {
+    streamControllers.roomStream.listen((event) {
+      setState(() {
+        unread = event.where((room) => room.lastMessage?.unread == true).length;
+      });
+    });
   }
 
   @override
   void initState() {
-    super.initState();
-
     supabase.auth.onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
 
@@ -129,20 +128,8 @@ class _MyAppState extends State<MyApp> {
       setState(() {});
       prefs.setBool(PrefKeys.newUser.key, false);
     });
-  }
 
-  unreadUpdater() {
-    streamControllers.roomStream.listen((event) {
-      int count = 0;
-
-      for (final room in event) {
-        count += room.lastMessage?.read == false ? 1 : 0;
-      }
-
-      setState(() {
-        unread = count;
-      });
-    });
+    super.initState();
   }
 
   @override
@@ -157,19 +144,38 @@ class _MyAppState extends State<MyApp> {
       themeMode: ThemeMode.dark,
       darkTheme: themeData,
       initialRoute: '/',
-      home: loggedIn()
-          ? newUser
-              ? const IntroPage()
-              : PersistentTabView(
-                  context,
-                  controller: _controller,
-                  screens: generateScreens(),
-                  items: generateNavBarItems(),
-                  backgroundColor: Colors.grey[900]!,
-                  navBarStyle: NavBarStyle.style3,
-                )
-          : const LogInPage(type: LogInType.signIn),
+      home: Home(loggedIn: loggedIn(), newUser: newUser, unread: unread),
     ));
+  }
+}
+
+class Home extends StatefulWidget {
+  const Home(
+      {super.key,
+      required this.loggedIn,
+      this.newUser = false,
+      required this.unread});
+
+  final bool loggedIn;
+  final bool newUser;
+  final int unread;
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends LoadingState<Home> {
+  late PersistentTabController _controller;
+  List<Widget> _navScreens = [];
+  List<PersistentBottomNavBarItem> _navItems = [];
+
+  @override
+  bool get bare => true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   PersistentBottomNavBarItem _generateNavBarItem(
@@ -187,26 +193,53 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  List<PersistentBottomNavBarItem> generateNavBarItems() {
+  Future<List<PersistentBottomNavBarItem>> generateNavBarItems(
+      Profile user) async {
     return [
       _generateNavBarItem(title: 'Learning', icon: Icons.school),
+      if (!user.organization)
+        _generateNavBarItem(title: 'Opportunities', icon: Icons.business),
       _generateNavBarItem(
           title: 'Messages',
           icon: Icons.message,
-          badgeText: unread > 0 ? unread.toString() : null),
-      _generateNavBarItem(title: 'Tasks', icon: Icons.task),
-      _generateNavBarItem(title: 'Events', icon: Icons.calendar_today),
+          badgeText: widget.unread > 0 ? widget.unread.toString() : null),
+      _generateNavBarItem(title: 'Tasks', icon: Icons.calendar_today),
       _generateNavBarItem(title: 'Account', icon: Icons.account_circle),
     ];
   }
 
-  List<Widget> generateScreens() {
+  Future<List<Widget>> generateScreens(Profile user) async {
     return [
-      const OpportunityPage(),
+      const LearningPage(),
+      if (!user.organization) const OpportunityPage(),
       const ViewMessagesPage(),
       const TaskPage(),
-      const CalendarPage(),
       const AccountPage(),
     ];
+  }
+
+  @override
+  Future<void> onInit() async {
+    Profile me = await supabase.getCurrentUser();
+
+    _navScreens = await generateScreens(me);
+    _navItems = await generateNavBarItems(me);
+    _controller = PersistentTabController(initialIndex: _navScreens.length - 1);
+  }
+
+  @override
+  Widget buildLoaded(BuildContext context) {
+    return widget.loggedIn
+        ? widget.newUser
+            ? const IntroPage()
+            : PersistentTabView(
+                context,
+                controller: _controller,
+                screens: _navScreens,
+                items: _navItems,
+                backgroundColor: Colors.grey[900]!,
+                navBarStyle: NavBarStyle.style3,
+              )
+        : const LogInPage(type: LogInType.signIn);
   }
 }
