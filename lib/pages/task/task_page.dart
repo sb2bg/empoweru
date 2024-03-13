@@ -1,3 +1,4 @@
+import 'package:age_sync/pages/task/calendar_page.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:age_sync/utils/task.dart';
 import 'package:age_sync/widgets/task_view.dart';
@@ -96,7 +97,11 @@ class _TaskPageState extends LoadingState<TaskPage> {
                 context.pushNamed(NewTaskPage.routeName);
               },
             ),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.view_array))
+          IconButton(
+              onPressed: () {
+                context.pushNamed(CalendarPage.routeName);
+              },
+              icon: const Icon(Icons.calendar_month))
         ],
       );
 
