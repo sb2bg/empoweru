@@ -120,7 +120,7 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
           FieldInfo('Twitter', Icons.south_america_outlined, (twitter) => null),
           FieldInfo(
               'Instagram', Icons.south_america_outlined, (instagram) => null),
-          FieldInfo('Logo', Icons.image, (logo) => null),
+          FieldInfo('Logo', Icons.image, (logo) => null, image: true),
         ],
       ),
       OrgStage(
@@ -195,8 +195,7 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
               return;
             }
 
-            final orgInsertResponse =
-                await supabase.from('organizations').insert({
+            await supabase.from('organizations').insert({
               'name': _stages[0].controllers[0].text,
               'mission': _stages[0].controllers[1].text,
               'type': _stages[0].controllers[2].text,
@@ -211,12 +210,8 @@ class _OrgSignUpPageState extends State<OrgSignUpPage>
               'facebook': _stages[2].controllers[2].text,
               'twitter': _stages[2].controllers[3].text,
               'instagram': _stages[2].controllers[4].text,
-              'logo': _stages[2].controllers[5].text,
+              'profile_id': signUpResponse.user!.id,
             }).select('id');
-
-            await supabase.from('profiles').update({
-              'organization': orgInsertResponse[0]['id'],
-            }).eq('id', signUpResponse.user!.id);
 
             if (mounted) {
               context.showSnackBar(
