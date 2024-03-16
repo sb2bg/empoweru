@@ -7,6 +7,9 @@ PODS:
   - AppAuth/Core (1.6.2)
   - AppAuth/ExternalUserAgent (1.6.2):
     - AppAuth/Core
+  - connectivity (0.0.1):
+    - Flutter
+    - Reachability
   - Flutter (1.0.0)
   - flutter_appauth (0.0.1):
     - AppAuth (= 1.6.2)
@@ -29,6 +32,7 @@ PODS:
     - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
+  - Reachability (3.2)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -44,6 +48,7 @@ PODS:
 
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
+  - connectivity (from `.symlinks/plugins/connectivity/ios`)
   - Flutter (from `Flutter`)
   - flutter_appauth (from `.symlinks/plugins/flutter_appauth/ios`)
   - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
@@ -61,10 +66,13 @@ SPEC REPOS:
     - AppAuth
     - FMDB
     - OrderedSet
+    - Reachability
 
 EXTERNAL SOURCES:
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
+  connectivity:
+    :path: ".symlinks/plugins/connectivity/ios"
   Flutter:
     :path: Flutter
   flutter_appauth:
@@ -91,6 +99,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   app_links: 5ef33d0d295a89d9d16bb81b0e3b0d5f70d6c875
   AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
+  connectivity: c4130b2985d4ef6fd26f9702e886bd5260681467
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_appauth: cf9b928962105b2a64a9802585d1c8adaf3e0f46
   flutter_inappwebview: 3d32228f1304635e7c028b0d4252937730bbc6cf
@@ -99,6 +108,7 @@ SPEC CHECKSUMS:
   OrderedSet: aaeb196f7fef5a9edf55d89760da9176ad40b93c
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   permission_handler_apple: 036b856153a2b1f61f21030ff725f3e6fece2b78
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f15a
