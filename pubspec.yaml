@@ -51,6 +51,7 @@ dependencies:
   supabase: ^1.11.11
   flutter_markdown: ^0.6.20
   permission_handler: ^11.3.0
+  connectivity: ^3.0.6
 
 dev_dependencies:
   flutter_test:
