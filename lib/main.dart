@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:age_sync/pages/account_page.dart';
 import 'package:age_sync/pages/admin/admin_page.dart';
@@ -21,11 +22,13 @@ import 'package:age_sync/pages/auth/log_in_page.dart';
 import 'package:age_sync/pages/task/new_task_page.dart';
 import 'package:age_sync/pages/task/task_page.dart';
 import 'package:age_sync/pages/view_account_page.dart';
+import 'package:age_sync/utils/chat/message.dart';
 import 'package:age_sync/utils/constants.dart';
 import 'package:age_sync/utils/loading_state.dart';
 import 'package:age_sync/utils/organization.dart';
 import 'package:age_sync/utils/profile.dart';
 import 'package:age_sync/widgets/error_page.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -103,46 +106,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final _newUser = prefs.getBool(PrefKeys.newUser.key) ?? true;
   bool _loggedIn() => supabase.auth.currentSession != null;
-  int _unread = 0;
-  StreamSubscription? _unreadSub;
-
-  void unreadUpdater() {
-    _unreadSub = streamControllers.roomStream.listen((event) {
-      int unread = 0;
-
-      for (final room in event) {
-        if (room.lastMessage?.unread == true) {
-          unread++;
-        }
-      }
-
-      setState(() {
-        _unread = unread;
-      });
-    });
-  }
-
-  @override
-  void initState() {
-    supabase.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-
-      if (event == AuthChangeEvent.signedOut) {
-        supabase.invalidateCache();
-        _unreadSub?.cancel();
-      }
-
-      if (event == AuthChangeEvent.signedIn) {
-        loadControllers();
-        unreadUpdater();
-      }
-
-      setState(() {});
-      prefs.setBool(PrefKeys.newUser.key, false);
-    });
-
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,36 +119,97 @@ class _MyAppState extends State<MyApp> {
       themeMode: ThemeMode.dark,
       darkTheme: themeData,
       initialRoute: '/',
-      home: Home(loggedIn: _loggedIn(), newUser: _newUser, unread: _unread),
+      home: Home(loggedIn: _loggedIn(), newUser: _newUser),
     ));
   }
 }
 
 class Home extends StatefulWidget {
-  const Home(
-      {super.key,
-      required this.loggedIn,
-      this.newUser = false,
-      required this.unread});
+  const Home({
+    super.key,
+    required this.loggedIn,
+    this.newUser = false,
+  });
 
   final bool loggedIn;
   final bool newUser;
-  final int unread;
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends LoadingState<Home> {
-  late Profile _me;
+  late Profile? _me;
   late PersistentTabController _controller;
+  late ConnectivityResult _result;
+  late StreamSubscription<ConnectivityResult> _subscription;
+  StreamSubscription<HashMap<String, List<Message>>>? _unreadSub;
+  int _unread = 0;
 
   @override
   bool get bare => true;
 
   @override
+  Future<void> onInit() async {
+    final connectivity = Connectivity();
+    _result = await connectivity.checkConnectivity();
+
+    _subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      setState(() {
+        _result = result;
+      });
+    });
+
+    _me = widget.loggedIn ? await supabase.getCurrentUser() : null;
+
+    final navScreens =
+        _generateScreens(_me); // just to get the length (hacky, I know)
+    _controller = PersistentTabController(initialIndex: navScreens.length - 1);
+
+    supabase.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+
+      if (event == AuthChangeEvent.signedOut) {
+        supabase.invalidateCache();
+        _unreadSub?.cancel();
+        _unread = 0;
+      }
+
+      if (event == AuthChangeEvent.signedIn) {
+        loadControllers();
+        unreadUpdater();
+      }
+
+      setState(() {});
+      prefs.setBool(PrefKeys.newUser.key, false);
+    });
+  }
+
+  void unreadUpdater() {
+    _unreadSub = streamControllers.messageStream.listen((event) async {
+      int unread = 0;
+
+      for (final messages in event.values) {
+        final last = messages.first;
+
+        if (last.unread) {
+          unread++;
+        }
+      }
+
+      setState(() {
+        _unread = unread;
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
+    _subscription.cancel();
+    _unreadSub?.cancel();
     super.dispose();
   }
 
@@ -204,24 +228,28 @@ class _HomeState extends LoadingState<Home> {
     );
   }
 
-  List<PersistentBottomNavBarItem> _generateNavBarItems(Profile user) {
+  List<PersistentBottomNavBarItem> _generateNavBarItems(Profile? user) {
     return [
       _generateNavBarItem(title: 'Learning', icon: Icons.school),
-      if (!user.organization)
-        _generateNavBarItem(title: 'Opportunities', icon: Icons.business),
+      user != null && user.organization
+          ? _generateNavBarItem(title: 'Recruit', icon: Icons.person)
+          : _generateNavBarItem(
+              title: 'Opportunities', icon: Icons.calendar_today),
       _generateNavBarItem(
           title: 'Messages',
           icon: Icons.message,
-          badgeText: widget.unread > 0 ? widget.unread.toString() : null),
+          badgeText: _unread > 0 ? _unread.toString() : null),
       _generateNavBarItem(title: 'Tasks', icon: Icons.calendar_today),
       _generateNavBarItem(title: 'Account', icon: Icons.account_circle),
     ];
   }
 
-  List<Widget> _generateScreens(Profile user) {
+  List<Widget> _generateScreens(Profile? user) {
     return [
       const LearningPage(),
-      if (!user.organization) const OpportunityPage(),
+      user != null && user.organization
+          ? const OpportunityPage() // TODO: replace with RecruitPage
+          : const OpportunityPage(),
       const ViewMessagesPage(),
       const TaskPage(),
       const AccountPage(),
@@ -229,26 +257,20 @@ class _HomeState extends LoadingState<Home> {
   }
 
   @override
-  Future<void> onInit() async {
-    _me = await supabase.getCurrentUser();
-
-    final navScreens = _generateScreens(_me); // just to get the length
-    _controller = PersistentTabController(initialIndex: navScreens.length - 1);
-  }
-
-  @override
   Widget buildLoaded(BuildContext context) {
-    return widget.loggedIn
-        ? widget.newUser
-            ? const IntroPage()
-            : PersistentTabView(
-                context,
-                controller: _controller,
-                screens: _generateScreens(_me),
-                items: _generateNavBarItems(_me),
-                backgroundColor: Colors.grey[900]!,
-                navBarStyle: NavBarStyle.style3,
-              )
-        : const LogInPage(type: LogInType.signIn);
+    return _result == ConnectivityResult.none
+        ? ErrorPage(error: 'No internet connection', onRetry: () {})
+        : widget.loggedIn
+            ? widget.newUser
+                ? const IntroPage()
+                : PersistentTabView(
+                    context,
+                    controller: _controller,
+                    screens: _generateScreens(_me),
+                    items: _generateNavBarItems(_me),
+                    backgroundColor: Colors.grey[900]!,
+                    navBarStyle: NavBarStyle.style3,
+                  )
+            : const LogInPage(type: LogInType.signIn);
   }
 }
