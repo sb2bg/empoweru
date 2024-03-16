@@ -80,157 +80,147 @@ class _LogInPageState extends State<LogInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(_title),
-        ),
         body: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(_title,
-                          style: const TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.bold)),
-                      const Text('to continue to EmpowerU'),
-                      const SizedBox(height: 16),
-                      IntrinsicWidth(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                            ElevatedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : () => _signIn(signInWithGoogle),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Image.asset('assets/images/google.png',
-                                      height: 20),
-                                  SizedBox(
-                                    width: 150,
-                                    child: Text(_isLoading
-                                        ? 'Loading'
-                                        : '$_title with Google'),
-                                  ),
-                                ],
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(_title,
+                      style: const TextStyle(
+                          fontSize: 30, fontWeight: FontWeight.bold)),
+                  const Text('to continue to EmpowerU'),
+                  const SizedBox(height: 16),
+                  IntrinsicWidth(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                        ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => _signIn(signInWithGoogle),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Image.asset('assets/images/google.png',
+                                  height: 20),
+                              SizedBox(
+                                width: 150,
+                                child: Text(_isLoading
+                                    ? 'Loading'
+                                    : '$_title with Google'),
                               ),
-                            ),
-                            ElevatedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : () => _signIn(signInWithFacebook),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Image.asset('assets/images/facebook.png',
-                                      height: 20),
-                                  SizedBox(
-                                    width: 150,
-                                    child: Text(_isLoading
-                                        ? 'Loading'
-                                        : '$_title with Facebook'),
-                                  ),
-                                ],
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => _signIn(signInWithFacebook),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Image.asset('assets/images/facebook.png',
+                                  height: 20),
+                              SizedBox(
+                                width: 150,
+                                child: Text(_isLoading
+                                    ? 'Loading'
+                                    : '$_title with Facebook'),
                               ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black),
-                              onPressed: () => _isLoading
-                                  ? null
-                                  : context.pushNamed(
-                                      widget.type == LogInType.signUp
-                                          ? EmailSignUpPage.routeName
-                                          : EmailLogInPage.routeName),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  const Icon(Icons.email),
-                                  SizedBox(
-                                      width: 150,
-                                      child: Text(_isLoading
-                                          ? 'Loading'
-                                          : '$_title with Email')),
-                                ],
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[200],
+                              foregroundColor: Colors.black),
+                          onPressed: () => _isLoading
+                              ? null
+                              : context.pushNamed(
+                                  widget.type == LogInType.signUp
+                                      ? EmailSignUpPage.routeName
+                                      : EmailLogInPage.routeName),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              const Icon(Icons.email),
+                              SizedBox(
+                                  width: 150,
+                                  child: Text(_isLoading
+                                      ? 'Loading'
+                                      : '$_title with Email')),
+                            ],
+                          ),
+                        ),
+                        const Divider(
+                          color: Colors.grey,
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[200],
+                              foregroundColor: Colors.black),
+                          onPressed: () => _isLoading
+                              ? null
+                              : widget.type == LogInType.signUp
+                                  ? context.pushNamed(OrgSignUpPage.routeName)
+                                  : context.pushNamed(EmailLogInPage.routeName,
+                                      arguments: OrgSignUpPage.routeName),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              const Icon(Icons.business),
+                              SizedBox(
+                                  width: 150,
+                                  child: Text(_isLoading
+                                      ? 'Loading'
+                                      : 'For organizations')),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                                widget.type == LogInType.signUp
+                                    ? 'Already have an account?'
+                                    : 'Don\'t have an account?',
+                                style: const TextStyle(fontSize: 16)),
+                            TextButton(
+                              onPressed: () {
+                                context.pushNamed(
+                                    widget.type.alternate().routeName);
+                              },
+                              child: Text(
+                                widget.type.alternate().title,
                               ),
-                            ),
-                            const Divider(
-                              color: Colors.grey,
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black),
-                              onPressed: () => _isLoading
-                                  ? null
-                                  : widget.type == LogInType.signUp
-                                      ? context
-                                          .pushNamed(OrgSignUpPage.routeName)
-                                      : context.pushNamed(
-                                          EmailLogInPage.routeName,
-                                          arguments: OrgSignUpPage.routeName),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  const Icon(Icons.business),
-                                  SizedBox(
-                                      width: 150,
-                                      child: Text(_isLoading
-                                          ? 'Loading'
-                                          : 'For organizations')),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                    widget.type == LogInType.signUp
-                                        ? 'Already have an account?'
-                                        : 'Don\'t have an account?',
-                                    style: const TextStyle(fontSize: 16)),
-                                TextButton(
-                                  onPressed: () {
-                                    context.pushNamed(
-                                        widget.type.alternate().routeName);
-                                  },
-                                  child: Text(
-                                    widget.type.alternate().title,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ])),
-                    ],
-                  ),
-                ),
+                            )
+                          ],
+                        ),
+                      ])),
+                ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('© ${DateTime.now().year} EmpowerU'),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: () =>
-                      context.pushNamed(PrivacyPolicyPage.routeName),
-                  child: const Text('Privacy Policy'),
-                ),
-              ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('© ${DateTime.now().year} EmpowerU'),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () => context.pushNamed(PrivacyPolicyPage.routeName),
+              child: const Text('Privacy Policy'),
             ),
-            SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
-        ));
+        ),
+        SizedBox(height: MediaQuery.of(context).padding.bottom),
+      ],
+    ));
   }
 }
